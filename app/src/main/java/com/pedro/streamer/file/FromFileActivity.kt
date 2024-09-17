@@ -155,7 +155,7 @@ class FromFileActivity : AppCompatActivity(), ConnectChecker,
       genericFromFile.reSyncFile()
     }
 
-    seekBar.progressDrawable.setColorFilter(Color.RED)
+    seekBar.progressDrawable.setColorFilter(Color.MAGENTA)
     seekBar.setOnSeekBarChangeListener(this)
   }
 

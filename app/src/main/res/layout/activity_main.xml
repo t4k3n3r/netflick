@@ -6,40 +6,44 @@
     android:gravity="center"
     android:orientation="vertical"
     >
-
-  <TextView
-      android:id="@+id/tv_version"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:textColor="@color/appColor"
-      android:textSize="12sp"
-      android:layout_marginTop="@dimen/grid_2"
-      android:layout_marginLeft="@dimen/grid_2"
-      android:layout_marginRight="@dimen/grid_2"
-      />
-  <TextView
-      android:id="@+id/tv_select"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="@dimen/grid_2"
-      android:layout_marginLeft="@dimen/grid_2"
-      android:layout_marginRight="@dimen/grid_2"
-      android:text="@string/tv_select"
-      android:textColor="@color/appColor"
-      android:textSize="22sp"
-      />
-
-  <GridView
-      android:id="@+id/list"
+  <EditText
+      android:id="@+id/editTeamName"
       android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:layout_marginTop="@dimen/grid_1"
-      android:columnWidth="40dp"
-      android:gravity="center"
-      android:horizontalSpacing="@dimen/grid_2"
-      android:numColumns="2"
-      android:padding="@dimen/grid_2"
-      android:stretchMode="columnWidth"
-      android:verticalSpacing="@dimen/grid_2"
-      />
+      android:layout_height="wrap_content"
+      android:hint="@string/nombre_del_equipo" />
+
+  <Button
+      android:id="@+id/buttonSelectLogo"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="1dp"
+      android:text="@string/seleccionar_logo" />
+
+  <Button
+      android:id="@+id/buttonSaveTeam"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="1dp"
+      android:text="@string/guardar_equipo" />
+
+  <Button
+      android:id="@+id/buttonStartRotationActivity"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="1dp"
+      android:text="@string/start_emiting" />
+
+  <TextView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="16dp"
+      android:text="@string/equipos_guardados"
+      android:textSize="18sp"
+      android:textStyle="bold" />
+
+  <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/recyclerViewTeams"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="1"/>
 </LinearLayout>

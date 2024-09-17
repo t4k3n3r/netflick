@@ -13,6 +13,8 @@
 
   <EditText
       android:hint="@string/hint_protocol"
+      android:visibility="gone"
+      android:text="rtmp://a.rtmp.youtube.com/live2/hdv8-77ta-vjvu-ey2r-40bx"
       android:textColor="@color/appColor"
       android:textColorHint="@color/appColor"
       android:inputType="textUri"
@@ -23,6 +25,124 @@
       android:id="@+id/et_rtp_url"
       app:layout_constraintTop_toTopOf="parent"
       />
+  <androidx.constraintlayout.widget.ConstraintLayout
+      android:layout_height="match_parent"
+      android:layout_width="match_parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      android:layout_margin="0dp">
+    <!-- Añadir el texto y los botones en la parte superior derecha -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="16dp"
+        android:orientation="horizontal"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:id="@+id/top_right_controls_local"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+      <TextView
+          android:id="@+id/text_local_name"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginRight="8dp"
+          android:text="local"
+          android:textColor="@color/white"
+          android:textSize="18sp"
+          android:layout_marginEnd="8dp"
+          />
+
+      <Button
+          android:id="@+id/local_button_plus"
+          android:layout_width="40dp"
+          android:layout_height="wrap_content"
+          android:text="+"
+          />
+
+      <Button
+          android:id="@+id/local_button_minus"
+          android:layout_width="40dp"
+          android:layout_height="wrap_content"
+          android:text="-"
+          />
+
+    </LinearLayout>
+
+    <!-- Añadir el texto y los botones en la parte superior derecha debajo de los del local -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="16dp"
+        android:orientation="horizontal"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:id="@+id/top_right_controls_visitor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_right_controls_local">
+
+      <TextView
+          android:id="@+id/text_visitor_name"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginRight="8dp"
+          android:text="visitor"
+          android:textColor="@color/white"
+          android:textSize="18sp"
+          android:layout_marginEnd="8dp"
+          />
+
+      <Button
+          android:id="@+id/visitor_button_plus"
+          android:layout_width="40dp"
+          android:layout_height="wrap_content"
+          android:text="+"
+          />
+
+      <Button
+          android:id="@+id/visitor_button_minus"
+          android:layout_width="40dp"
+          android:layout_height="wrap_content"
+          android:text="-"
+          />
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="16dp"
+        android:orientation="horizontal"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        android:id="@+id/top_right_controls_countdown"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_right_controls_visitor">
+
+      <Button
+          android:id="@+id/countdown_button"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Start Countdown" />
+
+      <Button
+          android:id="@+id/countdown_pause_button"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Pause"
+          android:visibility="gone"/>
+
+
+      <TextView
+          android:id="@+id/countdown_textview"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="45:00"
+          android:textSize="24sp"
+          android:visibility="gone"/>
+    </LinearLayout>
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
 
   <androidx.constraintlayout.widget.ConstraintLayout
       android:layout_width="match_parent"
@@ -30,17 +150,14 @@
       app:layout_constraintBottom_toBottomOf="parent"
       android:layout_margin="16dp"
       >
-    <ImageView
-        android:src="@drawable/record_icon"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:id="@+id/b_record"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/b_start_stop"
-        app:layout_constraintHorizontal_chainStyle="spread"
-        />
+    <SeekBar
+        android:id="@+id/zoomSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="160dp"
+        android:layout_marginRight="160dp"
+        android:max="100"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
     <ImageView
         android:src="@drawable/stream_icon"
@@ -49,7 +166,7 @@
         android:id="@+id/b_start_stop"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/b_record"
+
         app:layout_constraintEnd_toStartOf="@id/switch_camera"
         />
 
@@ -61,7 +178,16 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/b_start_stop"
+
+        />
+    <ImageView
+        android:src="@drawable/icon_person"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:id="@+id/switch_camera_frontal"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/b_start_stop"
+
         />
   </androidx.constraintlayout.widget.ConstraintLayout>
 

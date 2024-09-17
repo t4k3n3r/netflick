@@ -88,4 +88,8 @@ public class TextObjectFilterRender extends BaseObjectFilterRender {
   public void updateTextSize(float textSize) {
     setText(this.text + text, textSize, textColor, backgroundColor, typeface);
   }
+
+  public void updateText(String text) {
+    setText(text, textSize, textColor, backgroundColor, typeface);
+  }
 }

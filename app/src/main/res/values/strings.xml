@@ -1,5 +1,5 @@
 <resources>
-  <string name="app_name">RootEncoder streamer</string>
+  <string name="app_name">Net Flick Streamer</string>
   <string name="version">Version: %1$s</string>
   <!--Activities-->
   <string name="old_api">Old API (16 – 20)</string>
@@ -66,5 +66,14 @@
   <string name="camera2">Camera2</string>
   <string name="camerax">CameraX</string>
   <string name="bitmap">Bitmap</string>
+    <string name="match_menu">Match Menu</string>
+  <string name="dimonis_logo">Dimonis Logo</string>
+    <string name="select_local_team">select local team</string>
+  <string name="select_visitor_team">Select visitor team</string>
+  <string name="nombre_del_equipo">Nombre del equipo</string>
+  <string name="seleccionar_logo">Seleccionar Logo</string>
+  <string name="guardar_equipo">Guardar Equipo</string>
+  <string name="start_emiting">Empezar emisión</string>
+  <string name="equipos_guardados">Equipos Guardados</string>
 
 </resources>

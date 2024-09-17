@@ -4,6 +4,7 @@ val vName: String by rootProject.extra
 plugins {
   id("com.android.application")
   id("org.jetbrains.kotlin.android")
+  id("kotlin-parcelize")
 }
 
 android {
@@ -42,8 +43,11 @@ dependencies {
   //noinspection GradleDependency, version 1.7.0 need min sdk 21
   implementation("androidx.appcompat:appcompat:1.6.1")
   implementation("androidx.multidex:multidex:2.0.1")
+  implementation ("com.google.code.gson:gson:2.10.1")
+  implementation ("com.squareup.picasso:picasso:2.71828")
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
 
-  val cameraxVersion = "1.3.3"
+    val cameraxVersion = "1.3.3"
   implementation("androidx.camera:camera-core:$cameraxVersion")
   implementation("androidx.camera:camera-camera2:$cameraxVersion")
   implementation("androidx.camera:camera-lifecycle:$cameraxVersion")

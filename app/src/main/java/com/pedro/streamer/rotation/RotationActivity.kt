@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2023 pedroSG94.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.pedro.streamer.rotation
 
 import android.graphics.BitmapFactory
@@ -41,7 +25,7 @@ import com.pedro.streamer.utils.toast
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 class RotationActivity : AppCompatActivity(), OnTouchListener {
 
-  private val cameraFragment = CameraFragment.getInstance()
+  private lateinit var cameraFragment: CameraFragment
   private val filterMenu: FilterMenu by lazy { FilterMenu(this) }
   private var currentVideoSource: MenuItem? = null
   private var currentAudioSource: MenuItem? = null
@@ -50,20 +34,25 @@ class RotationActivity : AppCompatActivity(), OnTouchListener {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    supportActionBar?.hide()
+    window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN
+            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
     setContentView(R.layout.rotation_activity)
+
+    val selectedTeams = intent.getParcelableArrayListExtra<Teams>("selectedTeams")
+    cameraFragment = CameraFragment.newInstance(selectedTeams)
+    selectedTeams?.let {
+      // Maneja los equipos seleccionados
+      for (team in it) {
+        toast("Team: ${team.name}")
+      }
+    }
     supportFragmentManager.beginTransaction().add(R.id.container, cameraFragment).commit()
+    com.pedro.library.view.OpenGlView(this)
   }
 
   override fun onCreateOptionsMenu(menu: Menu): Boolean {
-    menuInflater.inflate(R.menu.rotation_menu, menu)
-    val defaultVideoSource = menu.findItem(R.id.video_source_camera2)
-    val defaultAudioSource = menu.findItem(R.id.audio_source_microphone)
-    val defaultOrientation = menu.findItem(R.id.orientation_horizontal)
-    val defaultFilter = menu.findItem(R.id.no_filter)
-    currentVideoSource = updateMenuColor(currentVideoSource, defaultVideoSource)
-    currentAudioSource = updateMenuColor(currentAudioSource, defaultAudioSource)
-    currentOrientation = updateMenuColor(currentOrientation, defaultOrientation)
-    currentFilter = updateMenuColor(currentFilter, defaultFilter)
     return true
   }
 
