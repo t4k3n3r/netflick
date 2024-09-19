@@ -159,6 +159,46 @@ abstract public class BaseObjectFilterRender extends BaseFilterRender {
     squareVertexObject.put(sprite.getTransformedVertices()).position(0);
   }
 
+  public void setReScale(float streamHeight, float streaWidth, float maxWidth, float maxHeight, float initialX, float initialY) {
+
+    // Initialize scales
+    var scaleWidth = maxWidth;
+    var scaleHeight = maxHeight;
+    var streamRatio = streamHeight / streaWidth;
+    float height = (float) streamObject.getHeight();
+    float width = (float) streamObject.getWidth();
+    float localAspectRatio = height / width;
+
+    // Adjust scale to mantain aspect ratio without passing the max limits
+    if (localAspectRatio > 1) {
+      // If the image is more width than height, we adjust the width to the max
+      scaleHeight = maxHeight / localAspectRatio / streamRatio;
+      if (scaleHeight > maxHeight) {
+        scaleHeight = maxHeight;
+        scaleWidth = maxWidth * localAspectRatio * streamRatio;
+      }
+      else{
+        scaleWidth = maxWidth;
+        scaleHeight = maxHeight;
+      }
+    }
+    else if (localAspectRatio < 1){
+      scaleWidth = maxWidth * localAspectRatio * streamRatio;
+      if (scaleWidth > maxWidth) {
+        scaleWidth = maxWidth;
+        scaleHeight = maxHeight / localAspectRatio / streamRatio;
+      }
+      else{
+        scaleWidth = maxWidth;
+        scaleHeight = maxHeight;
+      }
+    }
+    float localPosX = initialX + ((maxWidth - scaleWidth) / 2);
+    float localPosY = initialY + ((maxHeight - scaleHeight) / 2);
+    this.setScale(scaleWidth, scaleHeight);
+    this.setPosition(localPosX, localPosY);
+  }
+
   public void setPosition(float x, float y) {
     sprite.translate(x, y);
     squareVertexObject.put(sprite.getTransformedVertices()).position(0);

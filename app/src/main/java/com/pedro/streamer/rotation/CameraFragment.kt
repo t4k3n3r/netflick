@@ -60,6 +60,9 @@ class CameraFragment: Fragment(), ConnectChecker {
   private lateinit var bStartStop: ImageView
   private lateinit var countdownButton: Button
   private lateinit var countdownPauseButton: Button
+  private val scoreX = 21f
+  private val scoreboardHeight = 7f
+  private val textSize = 50f
   //private lateinit var countdownTextView: TextView
   /*private val width = 640
   private val height = 480
@@ -150,40 +153,55 @@ class CameraFragment: Fragment(), ConnectChecker {
       }
     }
 
-    //Add local logo to the stream
+    // Añade el logo del oponente a la emisión
     val localLogoObjectFilterRender = ImageObjectFilterRender()
-    localLogoObjectFilterRender.setImage(
-      BitmapFactory.decodeFile(team1.logoPath)
-    )
-    localLogoObjectFilterRender.setScale(5f, 7f)
-    localLogoObjectFilterRender.setPosition(1F, 1F)
+    val localBitmap = BitmapFactory.decodeFile(team1.logoPath)
 
+    // Stream resolution (por example 480x640 portrait mode)
+    val streamWidth = 2560f
+    val streamHeight = 1440f
+
+    // Permitted max in percentage of the stream size resolution
+    val localMaxHeightPercent = 7f
+    val localMaxWidthPercent = 7f
+
+    // Configure the image in the render
+    localLogoObjectFilterRender.setImage(localBitmap)
+    localLogoObjectFilterRender.setReScale(streamHeight, streamWidth, localMaxHeightPercent, localMaxWidthPercent, 1F, 1F)
+
+    val teamNameWidth = 12f
+    val scoreWidth = 2f
+    // val scoreboardHeight = 7f
+    val teamNameX = 8f
+    //val scoreX = 21f
+    val localY = 1f
+    val visitorY = 8f
 
     //Add local text to the stream
     val localTextObjectFilterRender = TextObjectFilterRender()
-    localTextObjectFilterRender.setText(team1.name, 20f, Color.BLACK)
-    localTextObjectFilterRender.setScale(12f, 5f)
-    localTextObjectFilterRender.setPosition(9F, 1F)
+    localTextObjectFilterRender.setText(team1.name, textSize, Color.BLACK)
+    localTextObjectFilterRender.setScale(teamNameWidth, scoreboardHeight)
+    localTextObjectFilterRender.setPosition(teamNameX, localY)
 
     //Add local score text to the stream
     localScoreTextObjectFilterRender = TextObjectFilterRender().apply {
-      setText("0", 20f, Color.BLACK)
-      setScale(2f, 5f)
-      setPosition(21F, 1F)
+      setText("0", textSize, Color.BLACK)
+      setScale(scoreWidth, scoreboardHeight)
+      setPosition(scoreX + 1f, localY)
     }
 
     //Add opponent score text to the stream
     visitorScoreTextObjectFilterRender = TextObjectFilterRender().apply {
-      setText("0", 20f, Color.BLACK)
-      setScale(2f, 5f)
-      setPosition(21F, 8F)
+      setText("0", textSize, Color.BLACK)
+      setScale(scoreWidth, scoreboardHeight)
+      setPosition(scoreX + 1f, visitorY)
     }
 
     //Add opponent text to the stream
     val opponentTextObjectFilterRender = TextObjectFilterRender()
-    opponentTextObjectFilterRender.setText(team2.name, 20f, Color.BLACK)
-    opponentTextObjectFilterRender.setScale(12f, 5f)
-    opponentTextObjectFilterRender.setPosition(9F, 8F)
+    opponentTextObjectFilterRender.setText(team2.name, textSize, Color.BLACK)
+    opponentTextObjectFilterRender.setScale(teamNameWidth, scoreboardHeight)
+    opponentTextObjectFilterRender.setPosition(teamNameX, visitorY)
 
 
 
@@ -191,41 +209,14 @@ class CameraFragment: Fragment(), ConnectChecker {
     val opponentLogoObjectFilterRender = ImageObjectFilterRender()
     val bitmap = BitmapFactory.decodeFile(team2.logoPath)
 
-    // Calcula la relación de aspecto de la imagen original
-    val aspectRatio = bitmap.width.toFloat() / bitmap.height.toFloat()
-
-    // Máximos permitidos
-    val maxHeight = 5f
+    // Permitted max
+    val maxHeight = 7f
     val maxWidth = 7f
 
-    // Inicializa las escalas
-    var scaleWidth = maxWidth
-    var scaleHeight = maxHeight
-
-    // Ajusta la escala para mantener la proporción y no superar los límites
-    if (bitmap.width > bitmap.height) {
-      // Si la imagen es más ancha que alta, ajusta el ancho al máximo permitido
-      scaleHeight = maxWidth / aspectRatio
-      if (scaleHeight > maxHeight) {
-        scaleHeight = maxHeight
-        scaleWidth = maxHeight * aspectRatio
-      }
-    } else {
-      // Si la imagen es más alta que ancha, ajusta la altura al máximo permitido
-      scaleWidth = maxHeight * aspectRatio
-      if (scaleWidth > maxWidth) {
-        scaleWidth = maxWidth
-        scaleHeight = maxWidth / aspectRatio
-      }
-    }
-
-    // Calcula las posiciones para centrar la imagen
-    val posX = 1F + ((maxWidth - scaleWidth) / 2)
-    val posY = 8F + ((maxHeight - scaleHeight) / 2)
-
     opponentLogoObjectFilterRender.setImage(bitmap)
-    opponentLogoObjectFilterRender.setScale(scaleWidth, scaleHeight)
-    opponentLogoObjectFilterRender.setPosition(posX, posY)
+    opponentLogoObjectFilterRender.setReScale(streamHeight, streamWidth, maxHeight, maxWidth, 1F, 8F)
+    //opponentLogoObjectFilterRender.setScale(scaleWidth, scaleHeight)
+    //opponentLogoObjectFilterRender.setPosition(posX, posY)
 
 
 
@@ -235,13 +226,13 @@ class CameraFragment: Fragment(), ConnectChecker {
       val canvas = Canvas(whiteBitmap)
       canvas.drawColor(Color.WHITE)
       setImage(whiteBitmap)
-      setScale(23f, 20f) // Ajusta el tamaño del cuadrado según sea necesario
+      setScale(25f, 20f) // Ajusta el tamaño del cuadrado según sea necesario
       setPosition(1F, 1F) // Ajusta la posición según sea necesario
     }
 
     //Add countdown text to the stream
     countdownTextFilterRender = TextObjectFilterRender()
-    countdownTextFilterRender.setText("45:00", 20f, Color.BLACK)
+    countdownTextFilterRender.setText("45:00", 50f, Color.BLACK)
     countdownTextFilterRender.setScale(5f, 7f)
     countdownTextFilterRender.setPosition(19F, 15F)
 
@@ -355,17 +346,17 @@ class CameraFragment: Fragment(), ConnectChecker {
   }
 
   fun TextObjectFilterRender.updateScoreText(score: String) {
-    setText(score, 20f, Color.BLACK)
+    setText(score, textSize, Color.BLACK)
     when (score.length) {
       1 -> {
         // Adjust scale and position for single-digit scores
-        setScale(2f, 5f)
-        setPosition(21.5F, position.y)  // Adjust position as needed
+        setScale(2f, scoreboardHeight)
+        setPosition(scoreX + 1f, position.y)  // Adjust position as needed
       }
       2 -> {
         // Adjust scale and position for double-digit scores
-        setScale(4f, 5f)
-        setPosition(21F, position.y)  // Adjust position as needed
+        setScale(3.5f, scoreboardHeight)
+        setPosition(scoreX, position.y)  // Adjust position as needed
       }
       else -> {
         // Default scale and position
