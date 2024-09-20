@@ -126,6 +126,18 @@
           android:text="Start Countdown" />
 
       <Button
+          android:id="@+id/male_button"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Start Male" />
+
+      <Button
+          android:id="@+id/female_button"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Start Female" />
+
+      <Button
           android:id="@+id/countdown_pause_button"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
@@ -181,10 +193,10 @@
 
         />
     <ImageView
+        android:id="@+id/male_icon"
         android:src="@drawable/icon_person"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:id="@+id/switch_camera_frontal"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toStartOf="@id/b_start_stop"
 
