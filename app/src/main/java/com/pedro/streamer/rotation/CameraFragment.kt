@@ -59,6 +59,8 @@ class CameraFragment: Fragment(), ConnectChecker {
   private lateinit var surfaceView: SurfaceView
   private lateinit var bStartStop: ImageView
   private lateinit var countdownButton: Button
+  private lateinit var femaleButton: Button
+  private lateinit var maleButton: Button
   private lateinit var countdownPauseButton: Button
   private val scoreX = 21f
   private val scoreboardHeight = 7f
@@ -101,6 +103,7 @@ class CameraFragment: Fragment(), ConnectChecker {
   private var minZoom: Float = 1.0f
   private var backCameraIds: List<String> = listOf()
   private var currentBackCameraIndex: Int = 0
+  private var male: ImageView? = null
   //private var switchBackCameraButton = view.findViewById<ImageView>(R.id.switch_camera)
 
   @SuppressLint("ClickableViewAccessibility")
@@ -109,9 +112,12 @@ class CameraFragment: Fragment(), ConnectChecker {
   ): View? {
     val view = inflater.inflate(R.layout.fragment_camera, container, false)
     bStartStop = view.findViewById(R.id.b_start_stop)
-    val bSwitchCamera = view.findViewById<ImageView>(R.id.switch_camera_frontal)
+    //val bSwitchCamera = view.findViewById<ImageView>(R.id.switch_camera_frontal)
     val switchBackCameraButton = view.findViewById<ImageView>(R.id.switch_camera)
     val etUrl = view.findViewById<EditText>(R.id.et_rtp_url)
+    male = view.findViewById<ImageView>(R.id.male_icon)
+    femaleButton = view.findViewById<Button>(R.id.female_button)
+    maleButton = view.findViewById<Button>(R.id.male_button)
     val localPlus = view.findViewById<Button>(R.id.local_button_plus)
     val localMinus = view.findViewById<Button>(R.id.local_button_minus)
     val visitorPlus = view.findViewById<Button>(R.id.visitor_button_plus)
@@ -275,12 +281,24 @@ class CameraFragment: Fragment(), ConnectChecker {
 
 
 
-    bSwitchCamera.setOnClickListener {
+    /*bSwitchCamera.setOnClickListener {
       when (val source = genericStream.videoSource) {
         is Camera2Source -> source.switchCamera()
       }
+    }*/
+
+    //Male or Female gender
+    maleButton.setOnClickListener {
+      maleButton.visibility = View.GONE
+      femaleButton.visibility = View.GONE
+      male!!.visibility = View.VISIBLE
     }
 
+    femaleButton.setOnClickListener {
+      maleButton.visibility = View.GONE
+      femaleButton.visibility = View.GONE
+      male!!.visibility = View.GONE
+    }
 
     // Countdown button and text view
     countdownButton = view.findViewById(R.id.countdown_button)
@@ -362,6 +380,19 @@ class CameraFragment: Fragment(), ConnectChecker {
         // Default scale and position
         setScale(5f, 5f)
         //setPosition(19F, 1F)  // Adjust position as needed
+      }
+    }
+    updateGenderZone()
+  }
+
+  private fun updateGenderZone(){
+    male = view?.findViewById(R.id.male_icon)
+    if((localScore + visitorScore) % 2 != 0){
+      if(male!!.visibility == View.VISIBLE){
+        male!!.visibility = View.GONE
+      }
+      else{
+        male!!.visibility = View.VISIBLE
       }
     }
   }

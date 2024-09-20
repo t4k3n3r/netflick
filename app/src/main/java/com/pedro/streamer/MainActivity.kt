@@ -35,6 +35,9 @@ class MainActivity : AppCompatActivity() {
   ).apply {
     if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
       this.add(Manifest.permission.POST_NOTIFICATIONS)
+      this.add(Manifest.permission.READ_MEDIA_IMAGES)
+      this.add(Manifest.permission.READ_MEDIA_VIDEO)
+      this.add(Manifest.permission.READ_MEDIA_AUDIO)
     }
   }.toTypedArray()
 
