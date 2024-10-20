@@ -48,7 +48,7 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_marginRight="8dp"
-          android:text="local"
+          android:text="@string/local"
           android:textColor="@color/white"
           android:textSize="18sp"
           android:layout_marginEnd="8dp"
@@ -58,14 +58,14 @@
           android:id="@+id/local_button_plus"
           android:layout_width="40dp"
           android:layout_height="wrap_content"
-          android:text="+"
+          android:text="@string/plus"
           />
 
       <Button
           android:id="@+id/local_button_minus"
           android:layout_width="40dp"
           android:layout_height="wrap_content"
-          android:text="-"
+          android:text="@string/minus"
           />
 
     </LinearLayout>
@@ -87,7 +87,7 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_marginRight="8dp"
-          android:text="visitor"
+          android:text="@string/visitor"
           android:textColor="@color/white"
           android:textSize="18sp"
           android:layout_marginEnd="8dp"
@@ -97,14 +97,14 @@
           android:id="@+id/visitor_button_plus"
           android:layout_width="40dp"
           android:layout_height="wrap_content"
-          android:text="+"
+          android:text="@string/plus"
           />
 
       <Button
           android:id="@+id/visitor_button_minus"
           android:layout_width="40dp"
           android:layout_height="wrap_content"
-          android:text="-"
+          android:text="@string/minus"
           />
 
     </LinearLayout>
@@ -123,25 +123,25 @@
           android:id="@+id/countdown_button"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:text="Start Countdown" />
+          android:text="@string/start_countdown" />
 
       <Button
           android:id="@+id/male_button"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:text="Start Male" />
+          android:text="@string/start_male" />
 
       <Button
           android:id="@+id/female_button"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:text="Start Female" />
+          android:text="@string/start_female" />
 
       <Button
           android:id="@+id/countdown_pause_button"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:text="Pause"
+          android:text="@string/pause"
           android:visibility="gone"/>
 
 
@@ -149,7 +149,7 @@
           android:id="@+id/countdown_textview"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:text="45:00"
+          android:text="@string/_45_00"
           android:textSize="24sp"
           android:visibility="gone"/>
     </LinearLayout>
