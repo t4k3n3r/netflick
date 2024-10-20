@@ -19,7 +19,6 @@ import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
@@ -38,14 +37,16 @@ import com.pedro.streamer.utils.toast
 class CameraFragment: Fragment(), ConnectChecker {
   private lateinit var team1: Teams
   private lateinit var team2: Teams
+  private lateinit var rtmpUrl: String
 
   companion object {
     private const val ARG_TEAMS = "selectedTeams"
 
-    fun newInstance(selectedTeams: ArrayList<Teams>?): CameraFragment {
+    fun newInstance(selectedTeams: ArrayList<Teams>?, rtmpUrl: String?): CameraFragment {
       return CameraFragment().apply {
         arguments = Bundle().apply {
           putParcelableArrayList(ARG_TEAMS, selectedTeams)
+          putString("rtmpUrl", rtmpUrl)
         }
       }
     }
@@ -88,7 +89,7 @@ class CameraFragment: Fragment(), ConnectChecker {
   private val sampleRate = 32000
   private val isStereo = true
   private val aBitrate = 128 * 1000
-  private var recordPath = ""
+  //private var recordPath = ""
 
   private var localScoreTextObjectFilterRender: TextObjectFilterRender? = null
   private var visitorScoreTextObjectFilterRender: TextObjectFilterRender? = null
@@ -114,7 +115,7 @@ class CameraFragment: Fragment(), ConnectChecker {
     bStartStop = view.findViewById(R.id.b_start_stop)
     //val bSwitchCamera = view.findViewById<ImageView>(R.id.switch_camera_frontal)
     val switchBackCameraButton = view.findViewById<ImageView>(R.id.switch_camera)
-    val etUrl = view.findViewById<EditText>(R.id.et_rtp_url)
+    //val etUrl = view.findViewById<EditText>(R.id.et_rtp_url)
     male = view.findViewById<ImageView>(R.id.male_icon)
     femaleButton = view.findViewById<Button>(R.id.female_button)
     maleButton = view.findViewById<Button>(R.id.male_button)
@@ -151,7 +152,7 @@ class CameraFragment: Fragment(), ConnectChecker {
 
     bStartStop.setOnClickListener {
       if (!genericStream.isStreaming) {
-        genericStream.startStream(etUrl.text.toString())
+        genericStream.startStream(rtmpUrl)
         bStartStop.setImageResource(R.drawable.stream_stop_icon)
       } else {
         genericStream.stopStream()
@@ -243,7 +244,7 @@ class CameraFragment: Fragment(), ConnectChecker {
     countdownTextFilterRender.setPosition(19F, 15F)
 
     //Add all filters to the stream
-    var stream = genericStream.getGlInterface()
+    val stream = genericStream.getGlInterface()
     stream.addFilter(whiteSquareFilter)
     stream.addFilter(localLogoObjectFilterRender)
     stream.addFilter(localTextObjectFilterRender)
@@ -428,10 +429,11 @@ class CameraFragment: Fragment(), ConnectChecker {
     val zoomLevel = minZoom + (zoomLevel / 100.0f) * (maxZoom - minZoom)
     when (val source = genericStream.videoSource) {
       is Camera1Source -> source.setZoom(zoomLevel.toInt())
-      is Camera2Source -> source.setZoom(zoomLevel.toFloat())
+      is Camera2Source -> source.setZoom(zoomLevel)
       //is CameraXSource -> source.setZoom(zoomLevel)
     }
   }
+
   private fun startCountdownTimer() {
     timeLeftInMillis = 45 * 60 * 1000L // 45 minutes in milliseconds
 
@@ -502,6 +504,7 @@ class CameraFragment: Fragment(), ConnectChecker {
     super.onCreate(savedInstanceState)
     arguments?.let {
       val selectedTeams = it.getParcelableArrayList<Teams>(ARG_TEAMS)
+      rtmpUrl = it.getString("rtmpUrl").toString()
       if (selectedTeams != null && selectedTeams.size == 2) {
         team1 = selectedTeams[0]
         team2 = selectedTeams[1]

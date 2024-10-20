@@ -26,6 +26,12 @@
       android:layout_marginTop="1dp"
       android:text="@string/guardar_equipo" />
 
+  <EditText
+      android:id="@+id/editTrournamentName"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:hint="@string/tournament_name" />
+
   <Button
       android:id="@+id/buttonStartRotationActivity"
       android:layout_width="match_parent"

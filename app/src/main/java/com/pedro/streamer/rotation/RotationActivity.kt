@@ -41,7 +41,8 @@ class RotationActivity : AppCompatActivity(), OnTouchListener {
     setContentView(R.layout.rotation_activity)
 
     val selectedTeams = intent.getParcelableArrayListExtra<Teams>("selectedTeams")
-    cameraFragment = CameraFragment.newInstance(selectedTeams)
+    val rtmpUrl = intent.getStringExtra("rtmpUrl")
+    cameraFragment = CameraFragment.newInstance(selectedTeams, rtmpUrl)
     selectedTeams?.let {
       // Maneja los equipos seleccionados
       for (team in it) {
@@ -66,10 +67,6 @@ class RotationActivity : AppCompatActivity(), OnTouchListener {
         R.id.video_source_camera2 -> {
           currentVideoSource = updateMenuColor(currentVideoSource, item)
           cameraFragment.genericStream.changeVideoSource(Camera2Source(applicationContext))
-        }
-        R.id.video_source_camerax -> {
-          currentVideoSource = updateMenuColor(currentVideoSource, item)
-          cameraFragment.genericStream.changeVideoSource(CameraXSource(applicationContext))
         }
         R.id.video_source_bitmap -> {
           currentVideoSource = updateMenuColor(currentVideoSource, item)
