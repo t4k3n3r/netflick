@@ -11,7 +11,7 @@
       android:id="@+id/surfaceView"
       />
 
-  <EditText
+  <!--<EditText
       android:hint="@string/hint_protocol"
       android:visibility="gone"
       android:text="rtmp://a.rtmp.youtube.com/live2/hdv8-77ta-vjvu-ey2r-40bx"
@@ -24,7 +24,7 @@
       android:layout_margin="20dp"
       android:id="@+id/et_rtp_url"
       app:layout_constraintTop_toTopOf="parent"
-      />
+      />-->
   <androidx.constraintlayout.widget.ConstraintLayout
       android:layout_height="match_parent"
       android:layout_width="match_parent"
