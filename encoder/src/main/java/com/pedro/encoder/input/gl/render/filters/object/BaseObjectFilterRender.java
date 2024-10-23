@@ -172,25 +172,22 @@ abstract public class BaseObjectFilterRender extends BaseFilterRender {
     // Adjust scale to mantain aspect ratio without passing the max limits
     if (localAspectRatio > 1) {
       // If the image is more width than height, we adjust the width to the max
-      scaleHeight = maxHeight / localAspectRatio / streamRatio;
-      if (scaleHeight > maxHeight) {
-        scaleHeight = maxHeight;
-        scaleWidth = maxWidth * localAspectRatio * streamRatio;
-      }
-      else{
-        scaleWidth = maxWidth;
-        scaleHeight = maxHeight;
-      }
+      scaleHeight = maxHeight;
+      scaleWidth = (maxWidth / localAspectRatio) * streamRatio;
     }
     else if (localAspectRatio < 1){
-      scaleWidth = maxWidth * localAspectRatio * streamRatio;
-      if (scaleWidth > maxWidth) {
-        scaleWidth = maxWidth;
-        scaleHeight = maxHeight / localAspectRatio / streamRatio;
-      }
-      else{
-        scaleWidth = maxWidth;
+      scaleWidth = maxWidth;
+      scaleHeight = (maxHeight * localAspectRatio) / streamRatio;
+      if(scaleHeight > maxHeight){
         scaleHeight = maxHeight;
+        scaleWidth = (maxWidth / localAspectRatio) * streamRatio;
+      }
+    }
+    else{
+      scaleWidth = maxWidth * streamRatio / localAspectRatio;
+      scaleHeight = maxHeight;
+      if(scaleWidth > maxWidth){
+        scaleWidth = maxWidth *streamRatio * localAspectRatio;
       }
     }
     float localPosX = initialX + ((maxWidth - scaleWidth) / 2);
