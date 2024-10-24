@@ -173,14 +173,14 @@ abstract public class BaseObjectFilterRender extends BaseFilterRender {
     if (localAspectRatio > 1) {
       // If the image is more width than height, we adjust the width to the max
       scaleHeight = maxHeight;
-      scaleWidth = (maxWidth / localAspectRatio) * streamRatio;
+      scaleWidth = maxWidth / localAspectRatio * streamRatio;
     }
     else if (localAspectRatio < 1){
       scaleWidth = maxWidth;
-      scaleHeight = (maxHeight * localAspectRatio) / streamRatio;
+      scaleHeight = maxHeight * localAspectRatio / streamRatio;
       if(scaleHeight > maxHeight){
         scaleHeight = maxHeight;
-        scaleWidth = (maxWidth / localAspectRatio) * streamRatio;
+        scaleWidth = maxWidth / localAspectRatio * streamRatio;
       }
     }
     else{
