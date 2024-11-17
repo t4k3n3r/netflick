@@ -70,11 +70,11 @@
   <string name="dimonis_logo">Dimonis Logo</string>
   <string name="select_local_team">select local team</string>
   <string name="select_visitor_team">Select visitor team</string>
-  <string name="nombre_del_equipo">Nombre del equipo</string>
-  <string name="seleccionar_logo">Seleccionar Logo</string>
-  <string name="guardar_equipo">Guardar Equipo</string>
-  <string name="start_emiting">Empezar emisión</string>
-  <string name="equipos_guardados">Equipos Guardados</string>
+  <string name="nombre_del_equipo">Team name</string>
+  <string name="seleccionar_logo">Select Logo</string>
+  <string name="guardar_equipo">Save Team</string>
+  <string name="start_emiting">Start Broadcast</string>
+  <string name="equipos_guardados">Saved Teams</string>
   <string name="youtube_api_key">AIzaSyCdV30Pq1O282wYjzlAlCy5saZLOMO2LuE</string>
   <string name="tournament_name">CEBU-X 2ª</string>
   <string name="start_countdown">Start Countdown</string>
@@ -92,5 +92,7 @@
     <string name="public_broadcast">Public</string>
   <string name="no_listed">No listed</string>
   <string name="no_broadcast">No streaming</string>
+  <string name="stream_icon">Stream icon</string>
+  <string name="switch_icon">Switch icon</string>
 
 </resources>
