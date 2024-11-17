@@ -13,6 +13,7 @@ import android.hardware.camera2.CameraManager
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
 import android.view.SurfaceHolder
 import android.view.SurfaceView
@@ -24,6 +25,8 @@ import android.widget.SeekBar
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.google.api.services.youtube.model.LiveChatMessage
 import com.pedro.common.ConnectChecker
 import com.pedro.encoder.input.gl.render.filters.`object`.ImageObjectFilterRender
 import com.pedro.encoder.input.gl.render.filters.`object`.TextObjectFilterRender
@@ -31,22 +34,40 @@ import com.pedro.library.generic.GenericStream
 import com.pedro.library.util.sources.video.Camera1Source
 import com.pedro.library.util.sources.video.Camera2Source
 import com.pedro.streamer.R
+import com.pedro.streamer.utils.LiveChatManager
 import com.pedro.streamer.utils.toast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.properties.Delegates
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 class CameraFragment: Fragment(), ConnectChecker {
   private lateinit var team1: Teams
   private lateinit var team2: Teams
   private lateinit var rtmpUrl: String
+  private lateinit var matchTime: String
+  private var mixedCheckBox by Delegates.notNull<Boolean>()
 
   companion object {
     private const val ARG_TEAMS = "selectedTeams"
 
-    fun newInstance(selectedTeams: ArrayList<Teams>?, rtmpUrl: String?): CameraFragment {
+    fun newInstance(
+      selectedTeams: ArrayList<Teams>?,
+      rtmpUrl: String?,
+      matchTime: String?,
+      mixedCheckBox: Boolean,
+      liveChatId: String?
+
+    ): CameraFragment {
       return CameraFragment().apply {
         arguments = Bundle().apply {
           putParcelableArrayList(ARG_TEAMS, selectedTeams)
           putString("rtmpUrl", rtmpUrl)
+          putString("matchTime", matchTime)
+          putBoolean("mixedCheckBox", mixedCheckBox)
+          putString("liveChatId", liveChatId)
         }
       }
     }
@@ -70,21 +91,18 @@ class CameraFragment: Fragment(), ConnectChecker {
   /*private val width = 640
   private val height = 480
   private val vBitrate = 1200 * 1000*/
-  //Esta resolución funciona
+  //This resolution works
   /*private val width = 1280
   private val height = 720
   private val vBitrate = 1500 * 1024*/
   //This resolution also works
-  /*private val width = 1920
+  private val width = 1920
   private val height = 1080
-  private val vBitrate = 3000 * 1024*/
-  //This one is not WORKING
+  private val vBitrate = 3500 * 1024
+  //This one is working but sometimes streams with frezzings
   /*private val width = 2560
   private val height = 1440
-  private val vBitrate = 13500 * 1024*/
-  private val width = 2560
-  private val height = 1440
-  private val vBitrate = 6000 * 1024
+  private val vBitrate = 6000 * 1024*/
   private var rotation = 0
   private val sampleRate = 32000
   private val isStereo = true
@@ -104,7 +122,12 @@ class CameraFragment: Fragment(), ConnectChecker {
   private var minZoom: Float = 1.0f
   private var backCameraIds: List<String> = listOf()
   private var currentBackCameraIndex: Int = 0
-  private var male: ImageView? = null
+  private val womanObjectFilterRender = ImageObjectFilterRender()
+  private val manObjectFilterRender = ImageObjectFilterRender()
+  private var man: Boolean = false
+  private var plus: Boolean = true
+  private lateinit var liveChatTextView: TextView
+  private lateinit var liveChatManager: LiveChatManager
   //private var switchBackCameraButton = view.findViewById<ImageView>(R.id.switch_camera)
 
   @SuppressLint("ClickableViewAccessibility")
@@ -116,7 +139,8 @@ class CameraFragment: Fragment(), ConnectChecker {
     //val bSwitchCamera = view.findViewById<ImageView>(R.id.switch_camera_frontal)
     val switchBackCameraButton = view.findViewById<ImageView>(R.id.switch_camera)
     //val etUrl = view.findViewById<EditText>(R.id.et_rtp_url)
-    male = view.findViewById<ImageView>(R.id.male_icon)
+    //man = view.findViewById<ImageView>(R.id.man)
+    //woman = view.findViewById<ImageView>(R.id.woman)
     femaleButton = view.findViewById<Button>(R.id.female_button)
     maleButton = view.findViewById<Button>(R.id.male_button)
     val localPlus = view.findViewById<Button>(R.id.local_button_plus)
@@ -127,6 +151,17 @@ class CameraFragment: Fragment(), ConnectChecker {
     val visitorName = view.findViewById<TextView>(R.id.text_visitor_name)
     localName.text = team1.name
     visitorName.text = team2.name
+    liveChatTextView = view.findViewById(R.id.liveChatTextView)
+    liveChatTextView.movementMethod = ScrollingMovementMethod()
+    startLoadingComments()
+
+    val youtubeService = (activity as? RotationActivity)?.youtubeService
+    val liveChatId = arguments?.getString("liveChatId")
+
+    if (youtubeService != null && liveChatId != null) {
+      liveChatManager = LiveChatManager(youtubeService, liveChatId)
+      fetchLiveChatMessages()
+    }
 
     surfaceView = view.findViewById(R.id.surfaceView)
     (activity as? RotationActivity)?.let {
@@ -165,16 +200,16 @@ class CameraFragment: Fragment(), ConnectChecker {
     val localBitmap = BitmapFactory.decodeFile(team1.logoPath)
 
     // Stream resolution (por example 480x640 portrait mode)
-    val streamWidth = 2560f
-    val streamHeight = 1440f
+    val streamWidth = 1920f
+    val streamHeight = 1080f
 
-    // Permitted max in percentage of the stream size resolution
-    val localMaxHeightPercent = 7f
-    val localMaxWidthPercent = 7f
+    // Permitted max
+    val maxHeight = 7f
+    val maxWidth = 6f
 
     // Configure the image in the render
     localLogoObjectFilterRender.setImage(localBitmap)
-    localLogoObjectFilterRender.setReScale(streamHeight, streamWidth, localMaxHeightPercent, localMaxWidthPercent, 1F, 1F)
+    localLogoObjectFilterRender.setReScale(streamHeight, streamWidth, maxWidth, maxHeight, 2F, 1F)
 
     val teamNameWidth = 12f
     val scoreWidth = 2f
@@ -216,14 +251,10 @@ class CameraFragment: Fragment(), ConnectChecker {
     val opponentLogoObjectFilterRender = ImageObjectFilterRender()
     val bitmap = BitmapFactory.decodeFile(team2.logoPath)
 
-    // Permitted max
-    val maxHeight = 7f
-    val maxWidth = 7f
+
 
     opponentLogoObjectFilterRender.setImage(bitmap)
-    opponentLogoObjectFilterRender.setReScale(streamHeight, streamWidth, maxHeight, maxWidth, 1F, 8F)
-    //opponentLogoObjectFilterRender.setScale(scaleWidth, scaleHeight)
-    //opponentLogoObjectFilterRender.setPosition(posX, posY)
+    opponentLogoObjectFilterRender.setReScale(streamHeight, streamWidth, maxWidth, maxHeight, 2F, 8F)
 
 
 
@@ -239,7 +270,7 @@ class CameraFragment: Fragment(), ConnectChecker {
 
     //Add countdown text to the stream
     countdownTextFilterRender = TextObjectFilterRender()
-    countdownTextFilterRender.setText("45:00", 50f, Color.BLACK)
+    countdownTextFilterRender.setText("$matchTime:00", 50f, Color.BLACK)
     countdownTextFilterRender.setScale(5f, 7f)
     countdownTextFilterRender.setPosition(19F, 15F)
 
@@ -254,13 +285,30 @@ class CameraFragment: Fragment(), ConnectChecker {
     stream.addFilter(opponentLogoObjectFilterRender)
     stream.addFilter(countdownTextFilterRender)
 
+    // Add the man and woman icon if needed
+    val womanIcon = BitmapFactory.decodeResource(resources, R.drawable.woman)
+    val manIcon = BitmapFactory.decodeResource(resources, R.drawable.man)
+    manObjectFilterRender.setImage(manIcon)
+    womanObjectFilterRender.setImage(womanIcon)
+    womanObjectFilterRender.setScale(5f, 6f)
+    womanObjectFilterRender.setPosition(15F, 15F)
+    manObjectFilterRender.setScale(5f, 6f)
+    manObjectFilterRender.setPosition(15F, 15F)
+    if(mixedCheckBox){
+      stream.addFilter(manObjectFilterRender)
+      stream.addFilter(womanObjectFilterRender)
+    }
+
+
 
     localPlus.setOnClickListener {
+      plus = true
       localScore++
       localScoreTextObjectFilterRender!!.updateScoreText(localScore.toString())
     }
 
     localMinus.setOnClickListener {
+      plus = false
       if (localScore > 0) {
         localScore--
         localScoreTextObjectFilterRender!!.updateScoreText(localScore.toString())
@@ -268,11 +316,13 @@ class CameraFragment: Fragment(), ConnectChecker {
     }
 
     visitorPlus.setOnClickListener {
+      plus = true
       visitorScore++
       visitorScoreTextObjectFilterRender!!.updateScoreText(visitorScore.toString())
     }
 
     visitorMinus.setOnClickListener {
+      plus = false
       if (visitorScore > 0) {
         visitorScore--
         visitorScoreTextObjectFilterRender!!.updateScoreText(visitorScore.toString())
@@ -288,17 +338,29 @@ class CameraFragment: Fragment(), ConnectChecker {
       }
     }*/
 
-    //Male or Female gender
-    maleButton.setOnClickListener {
-      maleButton.visibility = View.GONE
-      femaleButton.visibility = View.GONE
-      male!!.visibility = View.VISIBLE
-    }
+    if(mixedCheckBox) {
 
-    femaleButton.setOnClickListener {
+
+      //Male or Female gender
+      maleButton.setOnClickListener {
+        man = true
+        maleButton.visibility = View.GONE
+        femaleButton.visibility = View.GONE
+        womanObjectFilterRender.setScale(0f, 0f)
+        manObjectFilterRender.setScale(5f, 6f)
+      }
+
+      femaleButton.setOnClickListener {
+        man = false
+        maleButton.visibility = View.GONE
+        femaleButton.visibility = View.GONE
+        manObjectFilterRender.setScale(0f, 0f)
+        womanObjectFilterRender.setScale(5f, 6f)
+      }
+    }
+    else{
       maleButton.visibility = View.GONE
       femaleButton.visibility = View.GONE
-      male!!.visibility = View.GONE
     }
 
     // Countdown button and text view
@@ -383,17 +445,71 @@ class CameraFragment: Fragment(), ConnectChecker {
         //setPosition(19F, 1F)  // Adjust position as needed
       }
     }
-    updateGenderZone()
+    if (mixedCheckBox){
+      updateGenderZone()
+    }
+  }
+
+  private fun fetchLiveChatMessages() {
+    CoroutineScope(Dispatchers.Main).launch {
+      try {
+        val messages = liveChatManager.getLiveChatMessages()
+        displayMessages(messages)
+      } catch (e: Exception) {
+        e.printStackTrace()
+      }
+    }
+  }
+
+  private fun displayMessages(messages: List<LiveChatMessage>) {
+    val chatMessages = messages.joinToString("\n") { message ->
+      val author = message.authorDetails.displayName
+      val text = message.snippet.displayMessage
+      "$author: $text"
+    }
+    liveChatTextView.text = chatMessages
+    liveChatTextView.post {
+      val scrollAmount = liveChatTextView.layout.getLineTop(liveChatTextView.lineCount) - liveChatTextView.height
+      liveChatTextView.scrollTo(0, maxOf(scrollAmount, 0))
+    }
+  }
+
+  private fun startLoadingComments() {
+    lifecycleScope.launch(Dispatchers.Main) {
+      while (true) {
+        fetchLiveChatMessages()
+        delay(15000) // Esperar 30 segundos
+      }
+    }
   }
 
   private fun updateGenderZone(){
-    male = view?.findViewById(R.id.male_icon)
-    if((localScore + visitorScore) % 2 != 0){
-      if(male!!.visibility == View.VISIBLE){
-        male!!.visibility = View.GONE
+    if(plus) {
+      if ((localScore + visitorScore) % 2 != 0) {
+        if (!man) {
+          manObjectFilterRender.setScale(5f, 6f)
+          womanObjectFilterRender.setScale(0f, 0f)
+          manObjectFilterRender.setPosition(15F, 15F)
+        } else {
+          manObjectFilterRender.setScale(0f, 0f)
+          womanObjectFilterRender.setScale(5f, 6f)
+          womanObjectFilterRender.setPosition(15F, 15F)
+        }
+        man = !man
       }
-      else{
-        male!!.visibility = View.VISIBLE
+    }
+    else {
+      if ((localScore + visitorScore) % 2 == 0) {
+        if (!man) {
+          manObjectFilterRender.setScale(5f, 6f)
+          womanObjectFilterRender.setScale(0f, 0f)
+          manObjectFilterRender.setPosition(15F, 15F)
+        } else {
+          manObjectFilterRender.setScale(0f, 0f)
+          womanObjectFilterRender.setScale(5f, 6f)
+          womanObjectFilterRender.setPosition(15F, 15F)
+        }
+        man = !man
       }
     }
   }
@@ -435,7 +551,7 @@ class CameraFragment: Fragment(), ConnectChecker {
   }
 
   private fun startCountdownTimer() {
-    timeLeftInMillis = 45 * 60 * 1000L // 45 minutes in milliseconds
+    timeLeftInMillis = matchTime.toLong() * 60 * 1000L // 45 minutes in milliseconds
 
     countDownTimer = object : CountDownTimer(timeLeftInMillis, 1000) {
       override fun onTick(millisUntilFinished: Long) {
@@ -505,6 +621,8 @@ class CameraFragment: Fragment(), ConnectChecker {
     arguments?.let {
       val selectedTeams = it.getParcelableArrayList<Teams>(ARG_TEAMS)
       rtmpUrl = it.getString("rtmpUrl").toString()
+      matchTime = it.getString("matchTime").toString()
+      mixedCheckBox = it.getBoolean("mixedCheckBox")
       if (selectedTeams != null && selectedTeams.size == 2) {
         team1 = selectedTeams[0]
         team2 = selectedTeams[1]

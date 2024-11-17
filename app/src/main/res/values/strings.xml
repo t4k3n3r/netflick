@@ -76,7 +76,7 @@
   <string name="start_emiting">Empezar emisión</string>
   <string name="equipos_guardados">Equipos Guardados</string>
   <string name="youtube_api_key">AIzaSyCdV30Pq1O282wYjzlAlCy5saZLOMO2LuE</string>
-  <string name="tournament_name">CRBU-X</string>
+  <string name="tournament_name">CEBU-X 2ª</string>
   <string name="start_countdown">Start Countdown</string>
   <string name="start_male">Start Male</string>
   <string name="start_female">Start Female</string>
@@ -86,5 +86,11 @@
   <string name="minus">-</string>
   <string name="local">local</string>
   <string name="visitor">visitor</string>
+  <string name="_45_min">45</string>
+  <string name="mixed_game">Mixed Game</string>
+    <string name="live_chat_messages">Live Chat Messages</string>
+    <string name="public_broadcast">Public</string>
+  <string name="no_listed">No listed</string>
+  <string name="no_broadcast">No streaming</string>
 
 </resources>

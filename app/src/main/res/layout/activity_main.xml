@@ -10,6 +10,7 @@
       android:id="@+id/editTeamName"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
+      android:inputType="text"
       android:hint="@string/nombre_del_equipo" />
 
   <Button
@@ -26,11 +27,55 @@
       android:layout_marginTop="1dp"
       android:text="@string/guardar_equipo" />
 
+  <RadioGroup
+      android:id="@+id/visibilityRadioGroupOptions"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      android:layout_marginTop="16dp">
+
+    <RadioButton
+        android:id="@+id/radioPublic"
+        android:layout_width="0dp"
+        android:checked="true"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/public_broadcast" />
+
+    <RadioButton
+        android:id="@+id/radioUnlisted"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/no_listed" />
+
+    <RadioButton
+        android:id="@+id/radioNoBroadcast"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/no_broadcast" />
+  </RadioGroup>
+
+  <CheckBox
+      android:id="@+id/mixedCheckBox"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/mixed_game" />
+
   <EditText
       android:id="@+id/editTrournamentName"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:hint="@string/tournament_name" />
+      android:hint="@string/tournament_name"
+      android:inputType="text" />
+
+  <EditText
+      android:id="@+id/editMatchTime"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:hint="@string/_45_00"
+      android:inputType="numberDecimal"/>
 
   <Button
       android:id="@+id/buttonStartRotationActivity"

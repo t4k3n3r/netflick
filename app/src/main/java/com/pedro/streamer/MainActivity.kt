@@ -11,7 +11,9 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -59,9 +61,10 @@ class MainActivity : AppCompatActivity() {
   //private val channelId = "UCizpnK6dl1Fn2asSXBZyd5Q"
   private lateinit var googleSignInClient: GoogleSignInClient
   private lateinit var credential: GoogleAccountCredential
+  private var liveChatId: String = ""
   private val REQUEST_ACCOUNT_PICKER = 1000
   private val REQUEST_AUTHORIZATION = 1001
-  private val SCOPES = arrayOf("https://www.googleapis.com/auth/youtube.upload")//.force-ssl")
+  private val SCOPES = arrayOf("https://www.googleapis.com/auth/youtube.upload")
   private var streamTitle: String? = null
   private var description: String? = null
   private var visibility: String? = null
@@ -73,6 +76,9 @@ class MainActivity : AppCompatActivity() {
 
   private lateinit var editTeamName: EditText
   private lateinit var editTournamentName: EditText
+  private lateinit var editMatchTime: EditText
+  private lateinit var visibilityRadioGroup : RadioGroup
+  private lateinit var mixedCheckBox: CheckBox
   private lateinit var buttonSelectLogo: Button
   private lateinit var buttonSaveTeam: Button
   private lateinit var buttonStartRotationActivity: Button
@@ -80,6 +86,10 @@ class MainActivity : AppCompatActivity() {
   private lateinit var databaseHelper: DatabaseHelper
   private var selectedLogoPath: String = ""
   private var youtube: YouTube? = null
+  object YoutubeServiceManager {
+    var youtubeService: YouTube? = null
+  }
+
 
   private val permissions = mutableListOf(
     Manifest.permission.RECORD_AUDIO,
@@ -101,6 +111,7 @@ class MainActivity : AppCompatActivity() {
       try {
 
         val youtubeService = getService()
+        YoutubeServiceManager.youtubeService = youtubeService
         val Team1 = selectedTeams[0].name
         val Team2 = selectedTeams[1].name
         val pattern = "dd/MM/yyyy"
@@ -108,9 +119,8 @@ class MainActivity : AppCompatActivity() {
         val date = simpleDateFormat.format(System.currentTimeMillis())
         val tournamentName = editTournamentName.text.toString()
 
-        streamTitle = Team1 + " vs " + Team2 + " " + tournamentName + " - " + date
-        description = Team1 + " vs " + Team2 + " " + tournamentName + " - " + date
-        visibility = "public"
+        streamTitle = "$Team1 vs $Team2 $tournamentName - $date"
+        description = "$Team1 vs $Team2 $tournamentName - $date"
 
         val liveBroadcastSnippet = LiveBroadcastSnippet()
         liveBroadcastSnippet.title = streamTitle
@@ -132,17 +142,17 @@ class MainActivity : AppCompatActivity() {
           .execute()
 
         Log.d(TAG, "Live broadcast created with ID: ${returnedLiveBroadcast.id}")
+        liveChatId = returnedLiveBroadcast.snippet.liveChatId
 
 
         val liveStreamSnippet = LiveStreamSnippet()
-        liveStreamSnippet.title = streamTitle + " - LiveStream"
+        liveStreamSnippet.title = "$streamTitle - LiveStream"
         liveStreamSnippet.description = description
         val liveStreamStatus = LiveStreamStatus()
         liveStreamStatus.streamStatus = "active"
         val cdnSettings = CdnSettings()
-        //cdnSettings.format = "1080p"
         cdnSettings.ingestionType = "rtmp"
-        cdnSettings.resolution = "2160p"
+        cdnSettings.resolution = "1080p"
         cdnSettings.frameRate = "30fps"
         val liveStream = LiveStream()
         liveStream.snippet = liveStreamSnippet
@@ -161,7 +171,7 @@ class MainActivity : AppCompatActivity() {
           .execute()
 
         Log.d(TAG, "Live stream created with ID: ${returnedLiveStream.id}")
-        rtmpUrl = "rtmp://a.rtmp.youtube.com/live2/" + returnedLiveStream.cdn.ingestionInfo.streamName// returnedLiveStream.cdn.ingestionInfo.streamName
+        rtmpUrl = "rtmp://a.rtmp.youtube.com/live2/" + returnedLiveStream.cdn.ingestionInfo.streamName
         continuation.resume(rtmpUrl)
       } catch (e: GooglePlayServicesAvailabilityIOException) {
         //errorMessage = "Google Play Services not available: " + e.message
@@ -187,6 +197,10 @@ class MainActivity : AppCompatActivity() {
     editTeamName = findViewById(R.id.editTeamName)
     editTournamentName = findViewById(R.id.editTrournamentName)
     editTournamentName.setText(R.string.tournament_name)
+    editMatchTime = findViewById(R.id.editMatchTime)
+    visibilityRadioGroup = findViewById<RadioGroup>(R.id.visibilityRadioGroupOptions)
+    mixedCheckBox = findViewById(R.id.mixedCheckBox)
+    editMatchTime.setText(R.string._45_min)
     buttonSelectLogo = findViewById(R.id.buttonSelectLogo)
     buttonSaveTeam = findViewById(R.id.buttonSaveTeam)
     buttonStartRotationActivity = findViewById(R.id.buttonStartRotationActivity)
@@ -205,6 +219,7 @@ class MainActivity : AppCompatActivity() {
     }
     transitionAnim(true)
     loadTeams()
+    loadPreferences()
 
     apiKey = getString(R.string.youtube_api_key)
     credential = GoogleAccountCredential.usingOAuth2(this, listOf(SCOPES[0]))
@@ -271,15 +286,65 @@ class MainActivity : AppCompatActivity() {
     recyclerViewTeams.adapter = adapter
   }
 
+  private fun savePreferences() {
+    val sharedPreferences = getSharedPreferences("MyPreferences", MODE_PRIVATE)
+    val editor = sharedPreferences.edit()
+    editor.putString("teamName", editTeamName.text.toString())
+    editor.putString("tournamentName", editTournamentName.text.toString())
+    editor.putString("matchTime", editMatchTime.text.toString())
+    editor.putBoolean("mixedGame", mixedCheckBox.isChecked)
+
+    if (visibilityRadioGroup.checkedRadioButtonId == R.id.radioPublic) {
+      editor.putString("radioOption", "public")
+    } else if (visibilityRadioGroup.checkedRadioButtonId == R.id.radioUnlisted) {
+      editor.putString("radioOption", "unlisted")
+    } else if (visibilityRadioGroup.checkedRadioButtonId == R.id.radioNoBroadcast) {
+      editor.putString("radioOption", "no_broadcast")
+    }
+
+    editor.apply()
+  }
+
+  private fun loadPreferences() {
+    val sharedPreferences = getSharedPreferences("MyPreferences", MODE_PRIVATE)
+    editTeamName.setText(sharedPreferences.getString("teamName", ""))
+    editTournamentName.setText(sharedPreferences.getString("tournamentName", "@string/tournament_name"))
+    editMatchTime.setText(sharedPreferences.getString("matchTime", "@string._45_min"))
+    mixedCheckBox.isChecked = sharedPreferences.getBoolean("mixedGame", false)
+
+    val radioOption = sharedPreferences.getString("radioOption", "public")
+    if (radioOption == "public") {
+      visibilityRadioGroup.check(R.id.radioPublic)
+    } else if (radioOption == "unlisted") {
+      visibilityRadioGroup.check(R.id.radioUnlisted)
+    } else if (radioOption == "no_broadcast") {
+      visibilityRadioGroup.check(R.id.radioNoBroadcast)
+    }
+  }
+
   private fun startRotationActivity() {
     CoroutineScope(Dispatchers.Main).launch {
       val adapter = recyclerViewTeams.adapter as TeamsAdapter
       val selectedTeams = adapter.getSelectedTeams()
       if (selectedTeams.size == 2) {
-        rtmpUrl = withContext(Dispatchers.IO) { createLiveStream(selectedTeams) }
+        if (visibilityRadioGroup.checkedRadioButtonId == R.id.radioPublic) {
+          visibility = "Public"
+        }
+        else if (visibilityRadioGroup.checkedRadioButtonId == R.id.radioUnlisted) {
+          visibility = "Unlisted"
+        }
+        if (visibilityRadioGroup.checkedRadioButtonId != R.id.radioNoBroadcast) {
+          rtmpUrl = withContext(Dispatchers.IO) { createLiveStream(selectedTeams) }
+        }
+
         val intent = Intent(this@MainActivity, RotationActivity::class.java)
         intent.putExtra("rtmpUrl", rtmpUrl)
+        intent.putExtra("matchTime", editMatchTime.text.toString())
+        intent.putExtra("mixedCheckBox", mixedCheckBox.isChecked)
+        intent.putExtra("visibility", visibility)
+        intent.putExtra("liveChatId", liveChatId)
         intent.putParcelableArrayListExtra("selectedTeams", ArrayList(selectedTeams))
+        savePreferences()
         startActivity(intent)
       } else {
         Toast.makeText(this@MainActivity, "Por favor selecciona 2 equipos", Toast.LENGTH_SHORT).show()

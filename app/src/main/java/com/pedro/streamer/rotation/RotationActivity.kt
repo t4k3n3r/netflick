@@ -10,9 +10,11 @@ import android.view.View
 import android.view.View.OnTouchListener
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import com.google.api.services.youtube.YouTube
 import com.pedro.library.util.sources.audio.MicrophoneSource
 import com.pedro.library.util.sources.video.Camera1Source
 import com.pedro.library.util.sources.video.Camera2Source
+import com.pedro.streamer.MainActivity
 import com.pedro.streamer.R
 import com.pedro.streamer.utils.FilterMenu
 import com.pedro.streamer.utils.setColor
@@ -31,6 +33,7 @@ class RotationActivity : AppCompatActivity(), OnTouchListener {
   private var currentAudioSource: MenuItem? = null
   private var currentOrientation: MenuItem? = null
   private var currentFilter: MenuItem? = null
+  var youtubeService: YouTube? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -40,9 +43,14 @@ class RotationActivity : AppCompatActivity(), OnTouchListener {
             or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
     setContentView(R.layout.rotation_activity)
 
+    youtubeService = MainActivity.YoutubeServiceManager.youtubeService
+
     val selectedTeams = intent.getParcelableArrayListExtra<Teams>("selectedTeams")
     val rtmpUrl = intent.getStringExtra("rtmpUrl")
-    cameraFragment = CameraFragment.newInstance(selectedTeams, rtmpUrl)
+    val matchTime = intent.getStringExtra("matchTime")
+    val mixedCheckBox = intent.getBooleanExtra("mixedCheckBox", false)
+    val liveChatId = intent.getStringExtra("liveChatId")
+    cameraFragment = CameraFragment.newInstance(selectedTeams, rtmpUrl, matchTime, mixedCheckBox, liveChatId)
     selectedTeams?.let {
       // Maneja los equipos seleccionados
       for (team in it) {

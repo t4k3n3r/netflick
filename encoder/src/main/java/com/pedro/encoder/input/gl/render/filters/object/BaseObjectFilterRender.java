@@ -159,35 +159,34 @@ abstract public class BaseObjectFilterRender extends BaseFilterRender {
     squareVertexObject.put(sprite.getTransformedVertices()).position(0);
   }
 
-  public void setReScale(float streamHeight, float streaWidth, float maxWidth, float maxHeight, float initialX, float initialY) {
+  public void setReScale(float streamHeight, float streamWidth, float maxWidth, float maxHeight, float initialX, float initialY) {
 
     // Initialize scales
     var scaleWidth = maxWidth;
     var scaleHeight = maxHeight;
-    var streamRatio = streamHeight / streaWidth;
-    float height = (float) streamObject.getHeight();
-    float width = (float) streamObject.getWidth();
-    float localAspectRatio = height / width;
+    float streamRatio = (float) streamHeight / streamWidth;
+    float height = streamObject.getHeight();
+    float width = streamObject.getWidth();
+    float localAspectRatio = (float) height / width;
 
     // Adjust scale to mantain aspect ratio without passing the max limits
-    if (localAspectRatio > 1) {
+    if (localAspectRatio >= streamRatio) {
       // If the image is more width than height, we adjust the width to the max
       scaleHeight = maxHeight;
-      scaleWidth = maxWidth / localAspectRatio * streamRatio;
+      if (localAspectRatio >= 1) {
+        scaleWidth = maxWidth * localAspectRatio * streamRatio;
+      }
+      else {
+        scaleWidth = maxWidth / localAspectRatio * streamRatio;
+      }
+
     }
-    else if (localAspectRatio < 1){
+    else if (localAspectRatio < streamRatio){
       scaleWidth = maxWidth;
       scaleHeight = maxHeight * localAspectRatio / streamRatio;
       if(scaleHeight > maxHeight){
         scaleHeight = maxHeight;
-        scaleWidth = maxWidth / localAspectRatio * streamRatio;
-      }
-    }
-    else{
-      scaleWidth = maxWidth * streamRatio / localAspectRatio;
-      scaleHeight = maxHeight;
-      if(scaleWidth > maxWidth){
-        scaleWidth = maxWidth *streamRatio * localAspectRatio;
+        scaleWidth = maxWidth * localAspectRatio * streamRatio;
       }
     }
     float localPosX = initialX + ((maxWidth - scaleWidth) / 2);
