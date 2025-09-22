@@ -30,6 +30,11 @@
             return db.insert("teams", null, values)
         }
 
+        fun deleteTeam(teamId: Int): Int {
+            val db = this.writableDatabase
+            return db.delete("teams", "id = ?", arrayOf(teamId.toString()))
+        }
+
         val allTeams: List<Teams>
             get() {
                 val teams: MutableList<Teams> = ArrayList<Teams>()

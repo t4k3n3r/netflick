@@ -14,6 +14,7 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.RadioGroup
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -106,7 +107,7 @@ class MainActivity : AppCompatActivity() {
   }.toTypedArray()
 
 
-  private suspend fun createLiveStream(selectedTeams: List<Teams>): String {
+  private suspend fun createLiveStream(selectedTeams: List<Teams>, selectedResolution: String): String {
     suspendCoroutine { continuation ->
       try {
 
@@ -152,7 +153,7 @@ class MainActivity : AppCompatActivity() {
         liveStreamStatus.streamStatus = "active"
         val cdnSettings = CdnSettings()
         cdnSettings.ingestionType = "rtmp"
-        cdnSettings.resolution = "1080p"
+        cdnSettings.resolution = selectedResolution
         cdnSettings.frameRate = "30fps"
         val liveStream = LiveStream()
         liveStream.snippet = liveStreamSnippet
@@ -281,9 +282,21 @@ class MainActivity : AppCompatActivity() {
 
   private fun loadTeams() {
     val teamsList = databaseHelper.allTeams
-    val adapter = TeamsAdapter(teamsList)
+    val adapter = TeamsAdapter(teamsList) { team ->
+      deleteTeam(team)
+    }
     recyclerViewTeams.layoutManager = LinearLayoutManager(this)
     recyclerViewTeams.adapter = adapter
+  }
+
+  private fun deleteTeam(team: Teams) {
+    val rowsDeleted = databaseHelper.deleteTeam(team.id)
+    if (rowsDeleted > 0) {
+      Toast.makeText(this, "Equipo eliminado", Toast.LENGTH_SHORT).show()
+      loadTeams()
+    } else {
+      Toast.makeText(this, "Error al eliminar equipo", Toast.LENGTH_SHORT).show()
+    }
   }
 
   private fun savePreferences() {
@@ -333,14 +346,17 @@ class MainActivity : AppCompatActivity() {
         else if (visibilityRadioGroup.checkedRadioButtonId == R.id.radioUnlisted) {
           visibility = "Unlisted"
         }
+        val resolutionSpinner = findViewById<Spinner>(R.id.resolutionSpinner)
+        val selectedResolution = resolutionSpinner.selectedItem.toString()
         if (visibilityRadioGroup.checkedRadioButtonId != R.id.radioNoBroadcast) {
-          rtmpUrl = withContext(Dispatchers.IO) { createLiveStream(selectedTeams) }
+          rtmpUrl = withContext(Dispatchers.IO) { createLiveStream(selectedTeams, selectedResolution) }
         }
 
         val intent = Intent(this@MainActivity, RotationActivity::class.java)
         intent.putExtra("rtmpUrl", rtmpUrl)
         intent.putExtra("matchTime", editMatchTime.text.toString())
         intent.putExtra("mixedCheckBox", mixedCheckBox.isChecked)
+        intent.putExtra("resolution", selectedResolution)
         intent.putExtra("visibility", visibility)
         intent.putExtra("liveChatId", liveChatId)
         intent.putParcelableArrayListExtra("selectedTeams", ArrayList(selectedTeams))

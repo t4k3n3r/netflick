@@ -1,9 +1,9 @@
 package com.pedro.streamer
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -11,13 +11,16 @@ import com.pedro.streamer.rotation.Teams
 import com.squareup.picasso.Picasso
 import java.io.File
 
-class TeamsAdapter(private val teams: List<Teams>) : RecyclerView.Adapter<TeamsAdapter.ViewHolder>() {
+class TeamsAdapter(private val teams: List<Teams>, private val onDelete: (Teams) -> Unit) : RecyclerView.Adapter<TeamsAdapter.ViewHolder>() {
 
     private val selectedTeams = mutableListOf<Teams>()
+    private var startingTeamIndex = 0 // 0 para el primer equipo seleccionado, 1 para el segundo
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val teamName: TextView = view.findViewById(R.id.teamName)
         val teamLogo: ImageView = view.findViewById(R.id.teamLogo)
+        val deleteButton: ImageButton = view.findViewById(R.id.buttonDeleteTeam)
+
         init {
             view.setOnClickListener {
                 val team = teams[adapterPosition]
@@ -28,6 +31,10 @@ class TeamsAdapter(private val teams: List<Teams>) : RecyclerView.Adapter<TeamsA
                     selectedTeams.add(team)
                     view.setBackgroundColor(android.graphics.Color.LTGRAY)
                 }
+            }
+            deleteButton.setOnClickListener {
+                val team = teams[adapterPosition]
+                onDelete(team) // callback a MainActivity
             }
         }
     }
@@ -53,4 +60,10 @@ class TeamsAdapter(private val teams: List<Teams>) : RecyclerView.Adapter<TeamsA
     }
 
     fun getSelectedTeams(): List<Teams> = selectedTeams
+
+    fun getStartingTeamIndex(): Int = startingTeamIndex
+
+    fun setStartingTeamIndex(index: Int) {
+        startingTeamIndex = index
+    }
 }

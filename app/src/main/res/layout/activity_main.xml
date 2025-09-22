@@ -74,6 +74,12 @@
           android:text="@string/no_broadcast" />
     </RadioGroup>
 
+    <Spinner
+        android:id="@+id/resolutionSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:entries="@array/resolutions_array"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

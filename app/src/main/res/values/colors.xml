@@ -3,4 +3,7 @@
   <color name="appColor">#800080</color>
   <color name="black">#000000</color>
   <color name="white">#ffffff</color>
+  <color name="delete_red">#F44336</color>
+  <color name="delete_red_pressed">#D32F2F</color>
+  <color name="delete_red_border">#B71C1C</color>
 </resources>

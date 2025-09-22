@@ -47,6 +47,7 @@ class CameraFragment: Fragment(), ConnectChecker {
   private lateinit var team1: Teams
   private lateinit var team2: Teams
   private lateinit var rtmpUrl: String
+  private lateinit var resolution: String
   private lateinit var matchTime: String
   private var mixedCheckBox by Delegates.notNull<Boolean>()
 
@@ -57,6 +58,7 @@ class CameraFragment: Fragment(), ConnectChecker {
       selectedTeams: ArrayList<Teams>?,
       rtmpUrl: String?,
       matchTime: String?,
+      resolution: String?,
       mixedCheckBox: Boolean,
       liveChatId: String?
 
@@ -66,6 +68,7 @@ class CameraFragment: Fragment(), ConnectChecker {
           putParcelableArrayList(ARG_TEAMS, selectedTeams)
           putString("rtmpUrl", rtmpUrl)
           putString("matchTime", matchTime)
+          putString("resolution", resolution)
           putBoolean("mixedCheckBox", mixedCheckBox)
           putString("liveChatId", liveChatId)
         }
@@ -87,22 +90,16 @@ class CameraFragment: Fragment(), ConnectChecker {
   private val scoreX = 21f
   private val scoreboardHeight = 7f
   private val textSize = 50f
+
+  //This resolution also works
+  private var width = 1920
+  private var height = 1080
+  private var vBitrate = 3500 * 1024
   //private lateinit var countdownTextView: TextView
   /*private val width = 640
   private val height = 480
   private val vBitrate = 1200 * 1000*/
-  //This resolution works
-  /*private val width = 1280
-  private val height = 720
-  private val vBitrate = 1500 * 1024*/
-  //This resolution also works
-  private val width = 1920
-  private val height = 1080
-  private val vBitrate = 3500 * 1024
-  //This one is working but sometimes streams with frezzings
-  /*private val width = 2560
-  private val height = 1440
-  private val vBitrate = 6000 * 1024*/
+
   private var rotation = 0
   private val sampleRate = 32000
   private val isStereo = true
@@ -623,6 +620,7 @@ class CameraFragment: Fragment(), ConnectChecker {
       rtmpUrl = it.getString("rtmpUrl").toString()
       matchTime = it.getString("matchTime").toString()
       mixedCheckBox = it.getBoolean("mixedCheckBox")
+      resolution = "2160p"//it.getString("resolution")
       if (selectedTeams != null && selectedTeams.size == 2) {
         team1 = selectedTeams[0]
         team2 = selectedTeams[1]
@@ -636,6 +634,33 @@ class CameraFragment: Fragment(), ConnectChecker {
 
   private fun prepare() {
     val prepared = try {
+      //This resolution works
+      /*private val width = 1280
+      private val height = 720
+      private val vBitrate = 1500 * 1024*/
+      if (resolution == "1080p"){
+        //This resolution also works
+        width = 1920
+        height = 1080
+        vBitrate = 3500 * 1024
+      }
+
+      //This one is working but sometimes streams with frezzings
+      else if (resolution == "1440p") {
+        width = 2560
+        height = 1440
+        vBitrate = 6000 * 1024
+      }
+      // not tested 2160p (4K): 3840x2160
+      else if (resolution == "2160p") {
+
+        width = 3840
+        height = 2160
+        vBitrate = 10000 * 1024
+      }
+
+      //genericStream.setVideoCodec(VideoCodec.H265)
+
       genericStream.prepareVideo(width, height, vBitrate, rotation = rotation) &&
           genericStream.prepareAudio(sampleRate, isStereo, aBitrate)
     } catch (e: IllegalArgumentException) {
