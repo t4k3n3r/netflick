@@ -95,5 +95,7 @@
   <string name="stream_icon">Stream icon</string>
   <string name="switch_icon">Switch icon</string>
     <string name="delete_team">Delete</string>
+  <string name="local_attack">Local attacking</string>
+  <string name="visitor_attack">Visitor attacking</string>
 
 </resources>

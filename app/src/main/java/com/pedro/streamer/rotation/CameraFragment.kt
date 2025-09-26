@@ -121,11 +121,22 @@ class CameraFragment: Fragment(), ConnectChecker {
   private var currentBackCameraIndex: Int = 0
   private val womanObjectFilterRender = ImageObjectFilterRender()
   private val manObjectFilterRender = ImageObjectFilterRender()
+  private val localArrowObjectFilterRender = ImageObjectFilterRender()
+  private val visitorArrowObjectFilterRender = ImageObjectFilterRender()
   private var man: Boolean = false
   private var plus: Boolean = true
   private lateinit var liveChatTextView: TextView
   private lateinit var liveChatManager: LiveChatManager
+  private lateinit var localAttackButton: Button
+  private lateinit var visitorAttackButton: Button
+  private var localAttacking = true
+  private val scoreHistory = mutableListOf<String>()
+  private var firstAttacker = "local"
   //private var switchBackCameraButton = view.findViewById<ImageView>(R.id.switch_camera)
+  /*private val notificationTextFilterRender = TextObjectFilterRender()
+  private val notificationBackgroundFilterRender = ImageObjectFilterRender()
+  private var notificationTimer: CountDownTimer? = null
+  private var isNotificationVisible = false*/
 
   @SuppressLint("ClickableViewAccessibility")
   override fun onCreateView(
@@ -133,11 +144,7 @@ class CameraFragment: Fragment(), ConnectChecker {
   ): View? {
     val view = inflater.inflate(R.layout.fragment_camera, container, false)
     bStartStop = view.findViewById(R.id.b_start_stop)
-    //val bSwitchCamera = view.findViewById<ImageView>(R.id.switch_camera_frontal)
     val switchBackCameraButton = view.findViewById<ImageView>(R.id.switch_camera)
-    //val etUrl = view.findViewById<EditText>(R.id.et_rtp_url)
-    //man = view.findViewById<ImageView>(R.id.man)
-    //woman = view.findViewById<ImageView>(R.id.woman)
     femaleButton = view.findViewById<Button>(R.id.female_button)
     maleButton = view.findViewById<Button>(R.id.male_button)
     val localPlus = view.findViewById<Button>(R.id.local_button_plus)
@@ -148,6 +155,9 @@ class CameraFragment: Fragment(), ConnectChecker {
     val visitorName = view.findViewById<TextView>(R.id.text_visitor_name)
     localName.text = team1.name
     visitorName.text = team2.name
+    localAttackButton = view.findViewById<Button>(R.id.local_attack_button)
+    visitorAttackButton = view.findViewById<Button>(R.id.visitor_attack_button)
+
     liveChatTextView = view.findViewById(R.id.liveChatTextView)
     liveChatTextView.movementMethod = ScrollingMovementMethod()
     startLoadingComments()
@@ -170,8 +180,6 @@ class CameraFragment: Fragment(), ConnectChecker {
       }
 
       override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        //var width = 2560
-        //var height = 1440
         genericStream.getGlInterface().setPreviewResolution(width, height)
       }
 
@@ -192,7 +200,6 @@ class CameraFragment: Fragment(), ConnectChecker {
       }
     }
 
-    // Añade el logo del oponente a la emisión
     val localLogoObjectFilterRender = ImageObjectFilterRender()
     val localBitmap = BitmapFactory.decodeFile(team1.logoPath)
 
@@ -204,47 +211,55 @@ class CameraFragment: Fragment(), ConnectChecker {
     val maxHeight = 7f
     val maxWidth = 6f
 
-    // Configure the image in the render
     localLogoObjectFilterRender.setImage(localBitmap)
     localLogoObjectFilterRender.setReScale(streamHeight, streamWidth, maxWidth, maxHeight, 2F, 1F)
 
     val teamNameWidth = 12f
     val scoreWidth = 2f
-    // val scoreboardHeight = 7f
     val teamNameX = 8f
-    //val scoreX = 21f
     val localY = 1f
     val visitorY = 8f
 
-    //Add local text to the stream
     val localTextObjectFilterRender = TextObjectFilterRender()
     localTextObjectFilterRender.setText(team1.name, textSize, Color.BLACK)
     localTextObjectFilterRender.setScale(teamNameWidth, scoreboardHeight)
     localTextObjectFilterRender.setPosition(teamNameX, localY)
 
-    //Add local score text to the stream
     localScoreTextObjectFilterRender = TextObjectFilterRender().apply {
       setText("0", textSize, Color.BLACK)
       setScale(scoreWidth, scoreboardHeight)
       setPosition(scoreX + 1f, localY)
     }
 
-    //Add opponent score text to the stream
     visitorScoreTextObjectFilterRender = TextObjectFilterRender().apply {
       setText("0", textSize, Color.BLACK)
       setScale(scoreWidth, scoreboardHeight)
       setPosition(scoreX + 1f, visitorY)
     }
 
-    //Add opponent text to the stream
     val opponentTextObjectFilterRender = TextObjectFilterRender()
     opponentTextObjectFilterRender.setText(team2.name, textSize, Color.BLACK)
     opponentTextObjectFilterRender.setScale(teamNameWidth, scoreboardHeight)
     opponentTextObjectFilterRender.setPosition(teamNameX, visitorY)
 
+    val options = BitmapFactory.Options().apply {
+      inPreferredConfig = Bitmap.Config.ARGB_8888
+    }
 
+    val arrowBitmap = getBitmapFromVectorDrawable(requireContext(), R.drawable.arrow_right)
 
-    //Add opponent logo to the stream
+    val arrowBitmapLocal = arrowBitmap.copy(Bitmap.Config.ARGB_8888, false)
+    val arrowBitmapVisitor = arrowBitmap.copy(Bitmap.Config.ARGB_8888, false)
+
+    localArrowObjectFilterRender.setImage(arrowBitmapLocal)
+    visitorArrowObjectFilterRender.setImage(arrowBitmapVisitor)
+
+    localArrowObjectFilterRender.setScale(-3f, 4f)
+    localArrowObjectFilterRender.setPosition(27F, 2F)
+
+    visitorArrowObjectFilterRender.setScale(-3f, 4f)
+    visitorArrowObjectFilterRender.setPosition(27F, 9F)
+
     val opponentLogoObjectFilterRender = ImageObjectFilterRender()
     val bitmap = BitmapFactory.decodeFile(team2.logoPath)
 
@@ -256,24 +271,22 @@ class CameraFragment: Fragment(), ConnectChecker {
 
 
     val whiteSquareFilter = ImageObjectFilterRender().apply {
-      // Crea una imagen en blanco
       val whiteBitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
       val canvas = Canvas(whiteBitmap)
       canvas.drawColor(Color.WHITE)
       setImage(whiteBitmap)
-      setScale(25f, 20f) // Ajusta el tamaño del cuadrado según sea necesario
-      setPosition(1F, 1F) // Ajusta la posición según sea necesario
+      setScale(25f, 20f)
+      setPosition(1F, 1F)
     }
 
-    //Add countdown text to the stream
     countdownTextFilterRender = TextObjectFilterRender()
     countdownTextFilterRender.setText("$matchTime:00", 50f, Color.BLACK)
     countdownTextFilterRender.setScale(5f, 7f)
     countdownTextFilterRender.setPosition(19F, 15F)
 
-    //Add all filters to the stream
     val stream = genericStream.getGlInterface()
     stream.addFilter(whiteSquareFilter)
+
     stream.addFilter(localLogoObjectFilterRender)
     stream.addFilter(localTextObjectFilterRender)
     stream.addFilter(localScoreTextObjectFilterRender!!)
@@ -281,8 +294,9 @@ class CameraFragment: Fragment(), ConnectChecker {
     stream.addFilter(opponentTextObjectFilterRender)
     stream.addFilter(opponentLogoObjectFilterRender)
     stream.addFilter(countdownTextFilterRender)
+    stream.addFilter(localArrowObjectFilterRender)
+    stream.addFilter(visitorArrowObjectFilterRender)
 
-    // Add the man and woman icon if needed
     val womanIcon = BitmapFactory.decodeResource(resources, R.drawable.woman)
     val manIcon = BitmapFactory.decodeResource(resources, R.drawable.man)
     manObjectFilterRender.setImage(manIcon)
@@ -297,35 +311,65 @@ class CameraFragment: Fragment(), ConnectChecker {
     }
 
 
-
     localPlus.setOnClickListener {
       plus = true
+      /*val isBreak = isBreakPoint(localScore, visitorScore, "local")
+      val message = getScoreMessage(localScore, isBreak)
+      showSportsNotification(message, team1.name ?: "Local")*/
       localScore++
+      scoreHistory.add("local")
+      localAttacking = true
       localScoreTextObjectFilterRender!!.updateScoreText(localScore.toString())
+      updateAttackerArrow()
     }
 
     localMinus.setOnClickListener {
       plus = false
-      if (localScore > 0) {
+      val index = scoreHistory.lastIndexOf("local")
+      if (index != -1) {
+        scoreHistory.removeAt(index)
         localScore--
-        localScoreTextObjectFilterRender!!.updateScoreText(localScore.toString())
+        localScoreTextObjectFilterRender?.updateScoreText(localScore.toString())
+        updateAttackerArrow()
       }
     }
 
     visitorPlus.setOnClickListener {
       plus = true
+      /*val isBreak = isBreakPoint(visitorScore, localScore, "visitor")
+      val message = getScoreMessage(visitorScore, isBreak)
+      showSportsNotification(message, team2.name ?: "visitor")*/
       visitorScore++
+      scoreHistory.add("visitor")
+      localAttacking = false
       visitorScoreTextObjectFilterRender!!.updateScoreText(visitorScore.toString())
+      updateAttackerArrow()
     }
 
     visitorMinus.setOnClickListener {
       plus = false
-      if (visitorScore > 0) {
+      val index = scoreHistory.lastIndexOf("visitor")
+      if (index != -1) {
+        scoreHistory.removeAt(index)
         visitorScore--
-        visitorScoreTextObjectFilterRender!!.updateScoreText(visitorScore.toString())
+        visitorScoreTextObjectFilterRender?.updateScoreText(visitorScore.toString())
+        updateAttackerArrow()
       }
     }
 
+    localAttackButton.setOnClickListener {
+      firstAttacker = "local"
+      localAttackButton.visibility = View.GONE
+      visitorAttackButton.visibility = View.GONE
+      updateAttackerArrow()
+    }
+
+    visitorAttackButton.setOnClickListener {
+      firstAttacker = "visitor"
+      localAttackButton.visibility = View.GONE
+      visitorAttackButton.visibility = View.GONE
+      updateAttackerArrow()
+    }
 
 
 
@@ -338,7 +382,6 @@ class CameraFragment: Fragment(), ConnectChecker {
     if(mixedCheckBox) {
 
 
-      //Male or Female gender
       maleButton.setOnClickListener {
         man = true
         maleButton.visibility = View.GONE
@@ -360,10 +403,8 @@ class CameraFragment: Fragment(), ConnectChecker {
       femaleButton.visibility = View.GONE
     }
 
-    // Countdown button and text view
     countdownButton = view.findViewById(R.id.countdown_button)
     countdownPauseButton = view.findViewById(R.id.countdown_pause_button)
-    //countdownTextView = view.findViewById(R.id.countdown_textview)
 
     countdownButton.setOnClickListener {
       countdownButton.visibility = View.GONE
@@ -371,8 +412,6 @@ class CameraFragment: Fragment(), ConnectChecker {
       startCountdownTimer()
     }
     countdownPauseButton.setOnClickListener {
-      //countdownButton.visibility = View.VISIBLE
-      //countdownPauseButton.visibility = View.GONE
       pauseCountdownTimer()
     }
     zoomSeekBar = view.findViewById(R.id.zoomSeekBar)
@@ -427,25 +466,40 @@ class CameraFragment: Fragment(), ConnectChecker {
     setText(score, textSize, Color.BLACK)
     when (score.length) {
       1 -> {
-        // Adjust scale and position for single-digit scores
         setScale(2f, scoreboardHeight)
-        setPosition(scoreX + 1f, position.y)  // Adjust position as needed
+        setPosition(scoreX + 1f, position.y)
       }
       2 -> {
-        // Adjust scale and position for double-digit scores
         setScale(3.5f, scoreboardHeight)
-        setPosition(scoreX, position.y)  // Adjust position as needed
+        setPosition(scoreX, position.y)
       }
       else -> {
-        // Default scale and position
         setScale(5f, 5f)
-        //setPosition(19F, 1F)  // Adjust position as needed
       }
     }
+
     if (mixedCheckBox){
       updateGenderZone()
     }
   }
+
+  private fun updateAttackerArrow() {
+    var lastScorer = if (firstAttacker == "local") "visitor" else "local"
+
+    if (scoreHistory.isNotEmpty()){
+      lastScorer = scoreHistory.last()
+    }
+    if (lastScorer == "visitor") {
+      localArrowObjectFilterRender.setScale(-3f, 4f)
+      localArrowObjectFilterRender.setPosition(27F, 2F)
+      visitorArrowObjectFilterRender.setScale(0f, 0f)
+    } else {
+      localArrowObjectFilterRender.setScale(0f, 0f)
+      visitorArrowObjectFilterRender.setScale(-3f, 4f)
+      visitorArrowObjectFilterRender.setPosition(27F, 9F)
+    }
+  }
+
 
   private fun fetchLiveChatMessages() {
     CoroutineScope(Dispatchers.Main).launch {
@@ -475,10 +529,134 @@ class CameraFragment: Fragment(), ConnectChecker {
     lifecycleScope.launch(Dispatchers.Main) {
       while (true) {
         fetchLiveChatMessages()
-        delay(15000) // Esperar 30 segundos
+        delay(15000) // W8 30 seconds
       }
     }
   }
+
+  /*private fun createNotificationBackground(width: Int = 400, height: Int = 120, ccolor: Int = Color.parseColor("#FF1744")): Bitmap {
+    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+
+    // Limpiar el canvas
+    canvas.drawColor(Color.TRANSPARENT)
+
+    val paint = Paint().apply {
+      isAntiAlias = true
+    }
+
+    // Crear fondo con gradiente
+    val gradient = LinearGradient(
+      0f, 0f, width.toFloat(), height.toFloat(),
+      ccolor, Color.parseColor("#D32F2F"),
+      Shader.TileMode.CLAMP
+    )
+    paint.shader = gradient
+
+    // Dibujar rectángulo redondeado
+    val rect = RectF(0f, 0f, width.toFloat(), height.toFloat())
+    canvas.drawRoundRect(rect, 20f, 20f, paint)
+
+    // Añadir borde blanco
+    paint.apply {
+      shader = null
+      color = Color.WHITE
+      style = Paint.Style.STROKE
+      strokeWidth = 4f
+    }
+    canvas.drawRoundRect(rect, 20f, 20f, paint)
+
+    return bitmap
+  }
+
+  private fun showSportsNotification(message: String, teamName: String, duration: Long = 3000) {
+    try {
+      // Si ya hay una notificación visible, ocultarla primero
+      if (isNotificationVisible) {
+        hideNotification()
+      }
+
+      // Cancelar timer anterior si existe
+      notificationTimer?.cancel()
+
+      // Crear el texto completo
+      val fullMessage = "$message\n$teamName"
+
+      // Configurar el fondo de la notificación
+      val notificationBg = createNotificationBackground(500, 150, Color.parseColor("#FF1744"))
+      notificationBackgroundFilterRender.setImage(notificationBg)
+      notificationBackgroundFilterRender.setScale(15f, 10f) // Ajustar tamaño
+      notificationBackgroundFilterRender.setPosition(10f, 10f) // Centrado en la parte superior
+
+      // Configurar el texto de la notificación
+      notificationTextFilterRender.setText(fullMessage, 60f, Color.WHITE) // Texto blanco
+      notificationTextFilterRender.setScale(12f, 8f)
+      notificationTextFilterRender.setPosition(12f, 11f) // Ligeramente desplazado del fondo
+
+      // Añadir al stream
+      val stream = genericStream.getGlInterface()
+      stream.addFilter(notificationBackgroundFilterRender)
+      stream.addFilter(notificationTextFilterRender)
+
+      isNotificationVisible = true
+
+      // Programar ocultación automática
+      notificationTimer = object : CountDownTimer(duration, 100) {
+        override fun onTick(millisUntilFinished: Long) {
+          // Opcional: añadir efecto de parpadeo en los últimos 500ms
+          if (millisUntilFinished < 500) {
+            val alpha = if ((millisUntilFinished / 100) % 2 == 0L) 0.5f else 1.0f
+            // Nota: setAlpha no está disponible en ImageObjectFilterRender
+            // pero podrías implementar un efecto de escala
+          }
+        }
+
+        override fun onFinish() {
+          hideNotification()
+        }
+      }.start()
+
+    } catch (e: Exception) {
+      println("Error mostrando notificación: ${e.message}")
+      e.printStackTrace()
+    }
+  }
+
+  private fun hideNotification() {
+    try {
+      if (isNotificationVisible) {
+        val stream = genericStream.getGlInterface()
+        stream.removeFilter(notificationBackgroundFilterRender)
+        stream.removeFilter(notificationTextFilterRender)
+        isNotificationVisible = false
+      }
+      notificationTimer?.cancel()
+    } catch (e: Exception) {
+      println("Error ocultando notificación: ${e.message}")
+    }
+  }
+
+  private fun getScoreMessage(previousScore: Int,  isBreakPoint: Boolean = false): String {
+    return when {
+      isBreakPoint -> "¡BREAK!"
+      /*newScore - previousScore == 1 -> "¡PUNTO!"
+      newScore - previousScore > 1 -> "¡PUNTOS!"*/
+      else -> "¡PUNTO!"
+    }
+  }
+
+  private fun isBreakPoint(localScore: Int, visitorScore: Int, scoringTeam: String): Boolean {
+    var attackingTeam = firstAttacker
+    if (scoreHistory.isNotEmpty()){
+      attackingTeam = scoreHistory.last()
+    }
+    return when {
+      scoringTeam != attackingTeam -> true
+      //visitorScore >= 5 && localScore <= visitorScore - 2 && scoringTeam == "visitor" -> true
+      // Otros casos específicos de tu deporte
+      else -> false
+    }
+  }*/
 
   private fun updateGenderZone(){
     if(plus) {
@@ -511,6 +689,19 @@ class CameraFragment: Fragment(), ConnectChecker {
     }
   }
 
+  private fun getBitmapFromVectorDrawable(context: Context, drawableId: Int): Bitmap {
+    val drawable = androidx.core.content.ContextCompat.getDrawable(context, drawableId)!!
+    val bitmap = Bitmap.createBitmap(
+      drawable.intrinsicWidth,
+      drawable.intrinsicHeight,
+      Bitmap.Config.ARGB_8888
+    )
+    val canvas = Canvas(bitmap)
+    drawable.setBounds(0, 0, canvas.width, canvas.height)
+    drawable.draw(canvas)
+    return bitmap
+  }
+
 
   private fun switchBackCamera() {
     if (backCameraIds.isEmpty()) return
@@ -537,7 +728,6 @@ class CameraFragment: Fragment(), ConnectChecker {
     genericStream.startPreview(surfaceView)
   }
 
-  // Method to adjust zoom
   private fun setCameraZoom(zoomLevel: Int) {
     val zoomLevel = minZoom + (zoomLevel / 100.0f) * (maxZoom - minZoom)
     when (val source = genericStream.videoSource) {
@@ -639,21 +829,16 @@ class CameraFragment: Fragment(), ConnectChecker {
       private val height = 720
       private val vBitrate = 1500 * 1024*/
       if (resolution == "1080p"){
-        //This resolution also works
         width = 1920
         height = 1080
         vBitrate = 3500 * 1024
       }
-
-      //This one is working but sometimes streams with frezzings
       else if (resolution == "1440p") {
         width = 2560
         height = 1440
         vBitrate = 6000 * 1024
       }
-      // not tested 2160p (4K): 3840x2160
       else if (resolution == "2160p") {
-
         width = 3840
         height = 2160
         vBitrate = 10000 * 1024
@@ -674,6 +859,8 @@ class CameraFragment: Fragment(), ConnectChecker {
 
   override fun onDestroy() {
     super.onDestroy()
+    /*notificationTimer?.cancel()
+    hideNotification()*/
     genericStream.release()
   }
 

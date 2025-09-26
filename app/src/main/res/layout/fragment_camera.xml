@@ -107,6 +107,30 @@
           android:text="@string/minus"
           />
 
+      <Button
+          android:id="@+id/local_attack_button"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:layout_marginEnd="4dp"
+          android:text="@string/local_attack"
+          android:drawableLeft="@drawable/arrow_right"
+          android:drawablePadding="8dp"
+          android:background="@drawable/attack_button_background"
+          android:textColor="@android:color/white" />
+
+      <Button
+          android:id="@+id/visitor_attack_button"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:layout_marginStart="4dp"
+          android:text="@string/visitor_attack"
+          android:drawableRight="@drawable/arrow_right"
+          android:drawablePadding="8dp"
+          android:background="@drawable/attack_button_background"
+          android:textColor="@android:color/white" />
+
     </LinearLayout>
     <LinearLayout
         android:layout_width="wrap_content"
