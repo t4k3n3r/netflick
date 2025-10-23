@@ -19,11 +19,9 @@ package com.pedro.streamer.utils
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.media.MediaPlayer
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.MenuItem
-import android.view.Surface
 import android.view.View
 import androidx.annotation.RequiresApi
 import com.pedro.encoder.input.gl.SpriteGestureController
@@ -291,9 +289,9 @@ class FilterMenu(private val context: Context) {
       }
       R.id.surface_filter -> {
         val surfaceFilterRender = SurfaceFilterRender { surfaceTexture -> //You can render this filter with other api that draw in a surface. for example you can use VLC
-          val mediaPlayer: MediaPlayer = MediaPlayer.create(context, R.raw.big_bunny_240p)
-          mediaPlayer.setSurface(Surface(surfaceTexture))
-          mediaPlayer.start()
+          //val mediaPlayer: MediaPlayer = MediaPlayer.create(context, R.raw.big_bunny_240p)
+          //mediaPlayer.setSurface(Surface(surfaceTexture))
+          //mediaPlayer.start()
         }
         glInterface.setFilter(surfaceFilterRender)
         //Video is 360x240 so select a percent to keep aspect ratio (50% x 33.3% screen)

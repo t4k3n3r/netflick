@@ -97,5 +97,9 @@
     <string name="delete_team">Delete</string>
   <string name="local_attack">Local attacking</string>
   <string name="visitor_attack">Visitor attacking</string>
+    <string name="_25_min">25</string>
+    <string name="left"><![CDATA[<--]]></string>
+  <string name="right"><![CDATA[-->]]></string>
+    <string name="half_objective_score">7</string>
 
 </resources>

@@ -48,10 +48,12 @@ class RotationActivity : AppCompatActivity(), OnTouchListener {
     val selectedTeams = intent.getParcelableArrayListExtra<Teams>("selectedTeams")
     val rtmpUrl = intent.getStringExtra("rtmpUrl")
     val matchTime = intent.getStringExtra("matchTime")
+    val halfTime = intent.getStringExtra("halfTime")
+    val halfObjectiveScore = intent.getStringExtra("halfObjectiveScore")
     val resolution = intent.getStringExtra("resolution")
     val mixedCheckBox = intent.getBooleanExtra("mixedCheckBox", false)
     val liveChatId = intent.getStringExtra("liveChatId")
-    cameraFragment = CameraFragment.newInstance(selectedTeams, rtmpUrl, matchTime, resolution, mixedCheckBox, liveChatId)
+    cameraFragment = CameraFragment.newInstance(selectedTeams, rtmpUrl, matchTime, halfTime, halfObjectiveScore, resolution, mixedCheckBox, liveChatId)
     selectedTeams?.let {
       // Maneja los equipos seleccionados
       for (team in it) {

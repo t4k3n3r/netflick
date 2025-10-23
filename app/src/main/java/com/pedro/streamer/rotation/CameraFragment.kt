@@ -10,6 +10,7 @@ import android.graphics.Color
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -40,6 +41,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.max
 import kotlin.properties.Delegates
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -49,6 +51,7 @@ class CameraFragment: Fragment(), ConnectChecker {
   private lateinit var rtmpUrl: String
   private lateinit var resolution: String
   private lateinit var matchTime: String
+  private lateinit var halfTime: String
   private var mixedCheckBox by Delegates.notNull<Boolean>()
 
   companion object {
@@ -58,6 +61,8 @@ class CameraFragment: Fragment(), ConnectChecker {
       selectedTeams: ArrayList<Teams>?,
       rtmpUrl: String?,
       matchTime: String?,
+      halfTime: String?,
+      halfObjectiveScore: String?,
       resolution: String?,
       mixedCheckBox: Boolean,
       liveChatId: String?
@@ -68,6 +73,8 @@ class CameraFragment: Fragment(), ConnectChecker {
           putParcelableArrayList(ARG_TEAMS, selectedTeams)
           putString("rtmpUrl", rtmpUrl)
           putString("matchTime", matchTime)
+          putString("halfTime", halfTime)
+          putString("halfObjectiveScore", halfObjectiveScore)
           putString("resolution", resolution)
           putBoolean("mixedCheckBox", mixedCheckBox)
           putString("liveChatId", liveChatId)
@@ -129,9 +136,20 @@ class CameraFragment: Fragment(), ConnectChecker {
   private lateinit var liveChatManager: LiveChatManager
   private lateinit var localAttackButton: Button
   private lateinit var visitorAttackButton: Button
+  private lateinit var localRight: Button
+  private lateinit var localLeft: Button
   private var localAttacking = true
   private val scoreHistory = mutableListOf<String>()
   private var firstAttacker = "local"
+  private var firstAttack = "right"
+  private var halfTimeSoundPlayed = false
+  private var fiveMinutesLeftSoundPlayed = false
+  private var firstSecondHalfPoint = false
+  private var secondHalfPoint = false
+  private var caped = false
+  private var halfObjectiveScore = 7
+  private var secondHalfStartScore = 0
+  private var mediaPlayer: MediaPlayer? = null
   //private var switchBackCameraButton = view.findViewById<ImageView>(R.id.switch_camera)
   /*private val notificationTextFilterRender = TextObjectFilterRender()
   private val notificationBackgroundFilterRender = ImageObjectFilterRender()
@@ -157,6 +175,8 @@ class CameraFragment: Fragment(), ConnectChecker {
     visitorName.text = team2.name
     localAttackButton = view.findViewById<Button>(R.id.local_attack_button)
     visitorAttackButton = view.findViewById<Button>(R.id.visitor_attack_button)
+    localRight = view.findViewById<Button>(R.id.local_right)
+    localLeft = view.findViewById<Button>(R.id.local_left)
 
     liveChatTextView = view.findViewById(R.id.liveChatTextView)
     liveChatTextView.movementMethod = ScrollingMovementMethod()
@@ -371,6 +391,18 @@ class CameraFragment: Fragment(), ConnectChecker {
       updateAttackerArrow()
     }
 
+    localRight.setOnClickListener {
+      firstAttack = "right"
+      localRight.visibility = View.GONE
+      localLeft.visibility = View.GONE
+    }
+
+    localLeft.setOnClickListener {
+      firstAttack = "left"
+      localRight.visibility = View.GONE
+      localLeft.visibility = View.GONE
+    }
+
 
 
     /*bSwitchCamera.setOnClickListener {
@@ -485,18 +517,52 @@ class CameraFragment: Fragment(), ConnectChecker {
 
   private fun updateAttackerArrow() {
     var lastScorer = if (firstAttacker == "local") "visitor" else "local"
+    if (!secondHalfPoint && (localScore==halfObjectiveScore || visitorScore==halfObjectiveScore || halfTimeSoundPlayed)){
+      if((localScore==halfObjectiveScore|| visitorScore==halfObjectiveScore)){
+        playSound("halftime_sound", "Halftime!")
+        halfTimeSoundPlayed = true
+        secondHalfPoint = true
+        secondHalfStartScore = localScore + visitorScore
+        firstSecondHalfPoint = true
+      }
+      else if(!caped) {
+        caped = true
+        halfObjectiveScore = max(localScore, visitorScore) + 1
+      }
+    }
 
     if (scoreHistory.isNotEmpty()){
       lastScorer = scoreHistory.last()
     }
+    if (firstSecondHalfPoint) {
+      lastScorer = firstAttacker
+      firstAttack = if (firstAttack == "right") "left" else "right"
+      firstSecondHalfPoint = false
+    }
+    val accountabilityScore = scoreHistory.count() - secondHalfStartScore
+
+    val localDirection = if (accountabilityScore % 2 == 0) if (firstAttack == "right") "right" else "left" else if (firstAttack == "right") "left" else "right"
+
     if (lastScorer == "visitor") {
-      localArrowObjectFilterRender.setScale(-3f, 4f)
-      localArrowObjectFilterRender.setPosition(27F, 2F)
+      if (localDirection == "right") {
+        localArrowObjectFilterRender.setScale(3f, 4f)
+        localArrowObjectFilterRender.setPosition(23.5F, 2F)
+      }
+      else{
+        localArrowObjectFilterRender.setScale(-3f, 4f)
+        localArrowObjectFilterRender.setPosition(27F, 2F)
+      }
       visitorArrowObjectFilterRender.setScale(0f, 0f)
     } else {
+      if (localDirection == "right") {
+        visitorArrowObjectFilterRender.setScale(-3f, 4f)
+        visitorArrowObjectFilterRender.setPosition(27F, 9F)
+      }
+      else{
+        visitorArrowObjectFilterRender.setScale(3f, 4f)
+        visitorArrowObjectFilterRender.setPosition(23.5F, 9F)
+      }
       localArrowObjectFilterRender.setScale(0f, 0f)
-      visitorArrowObjectFilterRender.setScale(-3f, 4f)
-      visitorArrowObjectFilterRender.setPosition(27F, 9F)
     }
   }
 
@@ -737,8 +803,32 @@ class CameraFragment: Fragment(), ConnectChecker {
     }
   }
 
+  private fun playSound(type: String, message: String) {
+    try {
+      mediaPlayer?.release()
+
+      // At res/raw/halftime_sound.mp3
+      mediaPlayer = MediaPlayer.create(requireContext(), resources.getIdentifier(type, "raw", requireContext().packageName))// R.raw.halftime_sound)
+
+      mediaPlayer?.setOnCompletionListener {
+        it.release()
+      }
+
+      mediaPlayer?.start()
+
+      // Mostrar un mensaje opcional
+      toast(message, 15)
+
+    } catch (e: Exception) {
+      e.printStackTrace()
+      toast("Error al reproducir sonido")
+    }
+  }
+
   private fun startCountdownTimer() {
     timeLeftInMillis = matchTime.toLong() * 60 * 1000L // 45 minutes in milliseconds
+    halfTimeSoundPlayed = false
+    fiveMinutesLeftSoundPlayed = false
 
     countDownTimer = object : CountDownTimer(timeLeftInMillis, 1000) {
       override fun onTick(millisUntilFinished: Long) {
@@ -751,6 +841,20 @@ class CameraFragment: Fragment(), ConnectChecker {
           val seconds = millisUntilFinished / 1000 % 60
           //countdownTextView.text = String.format("%02d:%02d", minutes, seconds)
           countdownTextFilterRender.updateText(String.format("%02d:%02d", minutes, seconds))
+          val elapsedMinutes = matchTime.toLong() - minutes - 1
+
+          if (!halfTimeSoundPlayed && elapsedMinutes >= halfTime.toLong() && (localScore < 7 || visitorScore < 7)) {
+            playSound("halftime_sound", "¡Medio tiempo! ($halfTime minutos)")
+            halfTimeSoundPlayed = true
+          }
+          if(!fiveMinutesLeftSoundPlayed && millisUntilFinished <= 301000){
+            playSound("fiveminutesleft_sound", "Five minutes left!")
+            fiveMinutesLeftSoundPlayed = true
+          }
+          if (millisUntilFinished == 0L){
+            playSound("timeisover_sound", "Time is Over!")
+          }
+
         }
 
       }
@@ -809,6 +913,7 @@ class CameraFragment: Fragment(), ConnectChecker {
       val selectedTeams = it.getParcelableArrayList<Teams>(ARG_TEAMS)
       rtmpUrl = it.getString("rtmpUrl").toString()
       matchTime = it.getString("matchTime").toString()
+      halfTime = it.getString("halfTime").toString()
       mixedCheckBox = it.getBoolean("mixedCheckBox")
       resolution = "2160p"//it.getString("resolution")
       if (selectedTeams != null && selectedTeams.size == 2) {
@@ -859,6 +964,8 @@ class CameraFragment: Fragment(), ConnectChecker {
 
   override fun onDestroy() {
     super.onDestroy()
+    mediaPlayer?.release()
+    mediaPlayer = null
     /*notificationTimer?.cancel()
     hideNotification()*/
     genericStream.release()

@@ -16,6 +16,7 @@
         android:id="@+id/editTeamName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:autofillHints="@string/nombre_del_equipo"
         android:inputType="text"
         android:hint="@string/nombre_del_equipo" />
 
@@ -89,6 +90,7 @@
           android:id="@+id/editTrournamentName"
           android:layout_width="0dp"
           android:layout_height="wrap_content"
+          android:autofillHints="@string/tournament_name"
           android:hint="@string/tournament_name"
           android:inputType="text"
           android:layout_weight="6"/>
@@ -106,7 +108,24 @@
         android:id="@+id/editMatchTime"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:autofillHints="@string/_45_00"
         android:hint="@string/_45_00"
+        android:inputType="numberDecimal"/>
+
+    <EditText
+        android:id="@+id/editHalfTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints="@string/_25_min"
+        android:hint="@string/_25_min"
+        android:inputType="numberDecimal"/>
+
+    <EditText
+        android:id="@+id/editHalfObjectiveScore"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints="half_objective_score_hint"
+        android:hint="@string/half_objective_score"
         android:inputType="numberDecimal"/>
 
     <Button

@@ -78,6 +78,8 @@ class MainActivity : AppCompatActivity() {
   private lateinit var editTeamName: EditText
   private lateinit var editTournamentName: EditText
   private lateinit var editMatchTime: EditText
+  private lateinit var editHalfTime: EditText
+  private lateinit var editHalfObjectiveScore: EditText
   private lateinit var visibilityRadioGroup : RadioGroup
   private lateinit var mixedCheckBox: CheckBox
   private lateinit var buttonSelectLogo: Button
@@ -167,6 +169,7 @@ class MainActivity : AppCompatActivity() {
         val liveBroadcastBind = youtubeService.liveBroadcasts()
           .bind(returnedLiveBroadcast.id, listOf("snippet"))
 
+        //Youtube quota usage = 100
         val returnedLiveBroadcastBind =  liveBroadcastBind
           .setStreamId(returnedLiveStream.id)
           .execute()
@@ -199,9 +202,13 @@ class MainActivity : AppCompatActivity() {
     editTournamentName = findViewById(R.id.editTrournamentName)
     editTournamentName.setText(R.string.tournament_name)
     editMatchTime = findViewById(R.id.editMatchTime)
+    editHalfTime = findViewById(R.id.editHalfTime)
+    editHalfObjectiveScore = findViewById(R.id.editHalfObjectiveScore)
     visibilityRadioGroup = findViewById<RadioGroup>(R.id.visibilityRadioGroupOptions)
     mixedCheckBox = findViewById(R.id.mixedCheckBox)
     editMatchTime.setText(R.string._45_min)
+    editHalfTime.setText(R.string._25_min)
+    editHalfObjectiveScore.setText(R.string.half_objective_score)
     buttonSelectLogo = findViewById(R.id.buttonSelectLogo)
     buttonSaveTeam = findViewById(R.id.buttonSaveTeam)
     buttonStartRotationActivity = findViewById(R.id.buttonStartRotationActivity)
@@ -305,6 +312,8 @@ class MainActivity : AppCompatActivity() {
     editor.putString("teamName", editTeamName.text.toString())
     editor.putString("tournamentName", editTournamentName.text.toString())
     editor.putString("matchTime", editMatchTime.text.toString())
+    editor.putString("halfTime", editHalfTime.text.toString())
+    editor.putString("halfObjectiveScore", editHalfObjectiveScore.text.toString())
     editor.putBoolean("mixedGame", mixedCheckBox.isChecked)
 
     if (visibilityRadioGroup.checkedRadioButtonId == R.id.radioPublic) {
@@ -321,8 +330,10 @@ class MainActivity : AppCompatActivity() {
   private fun loadPreferences() {
     val sharedPreferences = getSharedPreferences("MyPreferences", MODE_PRIVATE)
     editTeamName.setText(sharedPreferences.getString("teamName", ""))
-    editTournamentName.setText(sharedPreferences.getString("tournamentName", "@string/tournament_name"))
-    editMatchTime.setText(sharedPreferences.getString("matchTime", "@string._45_min"))
+    editTournamentName.setText(sharedPreferences.getString("tournamentName", getString(R.string.tournament_name)))
+    editMatchTime.setText(sharedPreferences.getString("matchTime", getString(R.string._45_min)))
+    editHalfTime.setText(sharedPreferences.getString("halfTime", getString(R.string._25_min)))
+    editHalfObjectiveScore.setText(sharedPreferences.getString("halfObjectiveScore", "7"))
     mixedCheckBox.isChecked = sharedPreferences.getBoolean("mixedGame", false)
 
     val radioOption = sharedPreferences.getString("radioOption", "public")
@@ -355,6 +366,8 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this@MainActivity, RotationActivity::class.java)
         intent.putExtra("rtmpUrl", rtmpUrl)
         intent.putExtra("matchTime", editMatchTime.text.toString())
+        intent.putExtra("halfTime", editHalfTime.text.toString())
+        intent.putExtra("halfObjectiveScore", editHalfObjectiveScore.text.toString())
         intent.putExtra("mixedCheckBox", mixedCheckBox.isChecked)
         intent.putExtra("resolution", selectedResolution)
         intent.putExtra("visibility", visibility)
