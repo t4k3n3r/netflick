@@ -262,10 +262,6 @@ class CameraFragment: Fragment(), ConnectChecker {
     opponentTextObjectFilterRender.setScale(teamNameWidth, scoreboardHeight)
     opponentTextObjectFilterRender.setPosition(teamNameX, visitorY)
 
-    val options = BitmapFactory.Options().apply {
-      inPreferredConfig = Bitmap.Config.ARGB_8888
-    }
-
     val arrowBitmap = getBitmapFromVectorDrawable(requireContext(), R.drawable.arrow_right)
 
     val arrowBitmapLocal = arrowBitmap.copy(Bitmap.Config.ARGB_8888, false)
@@ -494,7 +490,7 @@ class CameraFragment: Fragment(), ConnectChecker {
     return view
   }
 
-  fun TextObjectFilterRender.updateScoreText(score: String) {
+  private fun TextObjectFilterRender.updateScoreText(score: String) {
     setText(score, textSize, Color.BLACK)
     when (score.length) {
       1 -> {
@@ -795,10 +791,10 @@ class CameraFragment: Fragment(), ConnectChecker {
   }
 
   private fun setCameraZoom(zoomLevel: Int) {
-    val zoomLevel = minZoom + (zoomLevel / 100.0f) * (maxZoom - minZoom)
+    val cameraZoomLevel = minZoom + (zoomLevel / 100.0f) * (maxZoom - minZoom)
     when (val source = genericStream.videoSource) {
-      is Camera1Source -> source.setZoom(zoomLevel.toInt())
-      is Camera2Source -> source.setZoom(zoomLevel)
+      is Camera1Source -> source.setZoom(cameraZoomLevel.toInt())
+      is Camera2Source -> source.setZoom(cameraZoomLevel)
       //is CameraXSource -> source.setZoom(zoomLevel)
     }
   }
