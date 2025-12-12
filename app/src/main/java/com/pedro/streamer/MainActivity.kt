@@ -139,10 +139,16 @@ class MainActivity : AppCompatActivity() {
         liveBroadcast.snippet = liveBroadcastSnippet
         liveBroadcast.status = liveBroadcastStatus
         liveBroadcast.contentDetails = liveBroadcastContentDetails
+        var returnedLiveBroadcast = LiveBroadcast()
 
-        val returnedLiveBroadcast = youtubeService.liveBroadcasts()
+      try{
+        returnedLiveBroadcast = youtubeService.liveBroadcasts()
           .insert(listOf("snippet", "status", "contentDetails"), liveBroadcast)
           .execute()
+      } catch (e: Exception) {
+        Log.e(TAG, "Error creating live stream: ${e.message}", e)
+        continuation.resumeWithException(e)
+      }
 
         Log.d(TAG, "Live broadcast created with ID: ${returnedLiveBroadcast.id}")
         liveChatId = returnedLiveBroadcast.snippet.liveChatId
@@ -358,7 +364,8 @@ class MainActivity : AppCompatActivity() {
           visibility = "Unlisted"
         }
         val resolutionSpinner = findViewById<Spinner>(R.id.resolutionSpinner)
-        val selectedResolution = resolutionSpinner.selectedItem.toString()
+        var selectedResolution = resolutionSpinner.selectedItem.toString()
+        selectedResolution = selectedResolution.substringBefore("~")
         if (visibilityRadioGroup.checkedRadioButtonId != R.id.radioNoBroadcast) {
           rtmpUrl = withContext(Dispatchers.IO) { createLiveStream(selectedTeams, selectedResolution) }
         }

@@ -71,8 +71,8 @@
   <string name="select_local_team">select local team</string>
   <string name="select_visitor_team">Select visitor team</string>
   <string name="nombre_del_equipo">Team name</string>
-  <string name="seleccionar_logo">Select Logo</string>
-  <string name="guardar_equipo">Save Team</string>
+  <string name="select_logo">Select Logo</string>
+  <string name="save_team">Save Team</string>
   <string name="start_emiting">Start Broadcast</string>
   <string name="equipos_guardados">Saved Teams</string>
   <string name="youtube_api_key">AIzaSyCdV30Pq1O282wYjzlAlCy5saZLOMO2LuE</string>
@@ -101,5 +101,13 @@
     <string name="left"><![CDATA[<--]]></string>
   <string name="right"><![CDATA[-->]]></string>
     <string name="half_objective_score">7</string>
+  <string name="MatchTime">Duración</string>
+  <string name="HalftimeTime">Duración hasta half</string>
+  <string name="halftimeScore">Puntuación para el half</string>
+  <string name="select_resolution">Resolución</string>
+  <string name="tournament_name_label">Nombre torneo</string>
+  <string name="matchTimeLabel">Duración del partido</string>
+  <string name="halftimeLabel">Duración del half</string>
+  <string name="half_objective_score_label">Puntuación del half</string>
 
 </resources>

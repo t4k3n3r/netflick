@@ -127,6 +127,7 @@ class CameraFragment: Fragment(), ConnectChecker {
   private var backCameraIds: List<String> = listOf()
   private var currentBackCameraIndex: Int = 0
   private val womanObjectFilterRender = ImageObjectFilterRender()
+  private val genderCounterTextFilterRender = TextObjectFilterRender()
   private val manObjectFilterRender = ImageObjectFilterRender()
   private val localArrowObjectFilterRender = ImageObjectFilterRender()
   private val visitorArrowObjectFilterRender = ImageObjectFilterRender()
@@ -324,6 +325,7 @@ class CameraFragment: Fragment(), ConnectChecker {
     if(mixedCheckBox){
       stream.addFilter(manObjectFilterRender)
       stream.addFilter(womanObjectFilterRender)
+      stream.addFilter(genderCounterTextFilterRender)
     }
 
 
@@ -408,8 +410,9 @@ class CameraFragment: Fragment(), ConnectChecker {
     }*/
 
     if(mixedCheckBox) {
-
-
+      genderCounterTextFilterRender.setText("1º", 50f, Color.BLACK)
+      genderCounterTextFilterRender.setScale(2f, 6f)
+      genderCounterTextFilterRender.setPosition(14.5F, 15.5F)
       maleButton.setOnClickListener {
         man = true
         maleButton.visibility = View.GONE
@@ -722,7 +725,9 @@ class CameraFragment: Fragment(), ConnectChecker {
 
   private fun updateGenderZone(){
     if(plus) {
+      genderCounterTextFilterRender.setText("2º", 50f, Color.BLACK)
       if ((localScore + visitorScore) % 2 != 0) {
+        genderCounterTextFilterRender.setText("1º", 50f, Color.BLACK)
         if (!man) {
           manObjectFilterRender.setScale(5f, 6f)
           womanObjectFilterRender.setScale(0f, 0f)
@@ -736,7 +741,9 @@ class CameraFragment: Fragment(), ConnectChecker {
       }
     }
     else {
+      genderCounterTextFilterRender.setText("1º", 50f, Color.BLACK)
       if ((localScore + visitorScore) % 2 == 0) {
+        genderCounterTextFilterRender.setText("2º", 50f, Color.BLACK)
         if (!man) {
           manObjectFilterRender.setScale(5f, 6f)
           womanObjectFilterRender.setScale(0f, 0f)
@@ -929,20 +936,30 @@ class CameraFragment: Fragment(), ConnectChecker {
       /*private val width = 1280
       private val height = 720
       private val vBitrate = 1500 * 1024*/
-      if (resolution == "1080p"){
+      if (resolution == "480p") {
+        width = 854
+        height = 480
+        vBitrate = 1200 * 1024
+      }
+      else if (resolution == "720p") {
+        width = 1280
+        height = 720
+        vBitrate = 3000 * 1024
+      }
+      else if (resolution == "1080p"){
         width = 1920
         height = 1080
-        vBitrate = 3500 * 1024
+        vBitrate = 4500 * 1024
       }
       else if (resolution == "1440p") {
         width = 2560
         height = 1440
-        vBitrate = 6000 * 1024
+        vBitrate = 7000 * 1024
       }
       else if (resolution == "2160p") {
         width = 3840
         height = 2160
-        vBitrate = 10000 * 1024
+        vBitrate = 12700 * 1024
       }
 
       //genericStream.setVideoCodec(VideoCodec.H265)

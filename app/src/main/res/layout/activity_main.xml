@@ -28,21 +28,19 @@
 
         <Button
             android:id="@+id/buttonSelectLogo"
-            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="1dp"
             android:layout_weight="1"
-            android:text="@string/seleccionar_logo" />
+            android:text="@string/select_logo" />
 
         <Button
             android:id="@+id/buttonSaveTeam"
-            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_marginTop="1dp"
           android:layout_weight="1"
-          android:text="@string/guardar_equipo" />
+          android:text="@string/save_team" />
     </LinearLayout>
 
     <RadioGroup
@@ -81,11 +79,18 @@
         android:layout_height="wrap_content"
         android:entries="@array/resolutions_array"/>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/tournament_name_label"
+        android:textSize="14sp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="4dp" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
-
       <EditText
           android:id="@+id/editTrournamentName"
           android:layout_width="0dp"
@@ -104,30 +109,81 @@
 
     </LinearLayout>
 
-    <EditText
-        android:id="@+id/editMatchTime"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:autofillHints="@string/_45_00"
-        android:hint="@string/_45_00"
-        android:inputType="numberDecimal"/>
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
 
-    <EditText
-        android:id="@+id/editHalfTime"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:autofillHints="@string/_25_min"
-        android:hint="@string/_25_min"
-        android:inputType="numberDecimal"/>
+      <!-- Columna 1: Match Time -->
+      <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:orientation="vertical"
+          android:layout_marginEnd="4dp">
 
-    <EditText
-        android:id="@+id/editHalfObjectiveScore"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:autofillHints="half_objective_score_hint"
-        android:hint="@string/half_objective_score"
-        android:inputType="numberDecimal"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/matchTimeLabel"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
 
+        <EditText
+            android:id="@+id/editMatchTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/_45_00"
+            android:inputType="numberDecimal"/>
+      </LinearLayout>
+
+      <!-- Columna 2: Half Time -->
+      <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:orientation="vertical"
+          android:layout_marginEnd="4dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/halftimeLabel"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/editHalfTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/_25_min"
+            android:inputType="numberDecimal"/>
+      </LinearLayout>
+
+      <!-- Columna 3: Half Objective Score -->
+      <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/half_objective_score_label"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/editHalfObjectiveScore"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/half_objective_score"
+            android:inputType="numberDecimal"/>
+      </LinearLayout>
+
+    </LinearLayout>
     <Button
         android:id="@+id/buttonStartRotationActivity"
         android:layout_width="match_parent"
